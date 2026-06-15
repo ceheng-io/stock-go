@@ -1,4 +1,4 @@
-import type { Board, FullQuote, SearchResult } from '@/types'
+import type { Board, FullQuote, SearchResult, ZTPoolItem } from '@/types'
 import { normalizeBoardSpotRows, type BoardSpotRow } from '@/services/charts'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
@@ -209,7 +209,7 @@ export function getNorthboundIndividual(symbol: string, options?: Record<string,
 }
 
 export function getZTPool(type = 'zt', date?: string) {
-  return apiRequest(`/market-event/zt-pool${query({ type, date })}`)
+  return apiRequest<ZTPoolItem[]>(`/market-event/zt-pool${query({ type, date })}`)
 }
 
 export function getStockChanges(type = 'large_buy') {

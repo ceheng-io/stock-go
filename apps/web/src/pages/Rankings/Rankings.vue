@@ -13,6 +13,62 @@
 
     <a-alert v-if="errorMessage" type="warning" show-icon closable :message="errorMessage" @close="errorMessage = ''" />
 
+    <a-card title="当日涨停板" size="small">
+      <template #extra>
+        <span class="muted">数据源：涨停池</span>
+      </template>
+      <div class="limit-up-summary">
+        <a-statistic title="涨停家数" :value="limitUpPool.length" suffix="只" />
+        <a-statistic title="最高连板" :value="maxContinuousBoards" suffix="板" />
+        <a-statistic title="最早封板" :value="earliestFirstBoardTime" />
+        <a-statistic title="封单金额" :value="formatYuanAmount(totalSealAmount)" />
+      </div>
+      <a-table
+        :columns="limitUpColumns"
+        :data-source="limitUpPool"
+        :pagination="{ pageSize: 15 }"
+        :loading="loading && limitUpPool.length === 0"
+        size="small"
+        row-key="code"
+        :custom-row="stockRowTo"
+      >
+        <template #bodyCell="{ column, record, index }">
+          <template v-if="column.key === 'rank'">
+            <span class="rank-num" :class="{ top: index < 3 }">{{ index + 1 }}</span>
+          </template>
+          <template v-else-if="column.key === 'name'">
+            <div class="board-name">{{ record.name }}</div>
+            <div class="muted">{{ record.code }}</div>
+          </template>
+          <template v-else-if="column.key === 'changePercent'">
+            <span :class="getChangeColorClass(record.changePercent)">
+              {{ formatPercent(record.changePercent) }}
+            </span>
+          </template>
+          <template v-else-if="column.key === 'continuousBoardCount'">
+            <a-tag v-if="record.continuousBoardCount" color="red">{{ formatBoardCount(record.continuousBoardCount) }}</a-tag>
+            <span v-else>--</span>
+          </template>
+          <template v-else-if="column.key === 'boardTime'">
+            <div>{{ record.firstBoardTime || '--' }}</div>
+            <div class="muted">末封 {{ record.lastBoardTime || '--' }}</div>
+          </template>
+          <template v-else-if="column.key === 'industry'">
+            {{ record.industry || '--' }}
+          </template>
+          <template v-else-if="column.key === 'ztStatistics'">
+            {{ record.ztStatistics || '--' }}
+          </template>
+          <template v-else-if="column.key === 'amount'">
+            {{ formatAmount(record.amount) }}
+          </template>
+          <template v-else-if="column.key === 'turnoverRate'">
+            {{ formatTurnover(record.turnoverRate) }}
+          </template>
+        </template>
+      </a-table>
+    </a-card>
+
     <a-row :gutter="[12, 12]">
       <a-col :xs="24" :lg="12">
         <a-card title="行业板块" size="small">
@@ -23,7 +79,7 @@
             :loading="loading && industry.length === 0"
             size="small"
             row-key="code"
-            @row="rowTo('industry')"
+            :custom-row="rowTo('industry')"
           >
             <template #bodyCell="{ column, record, index }">
               <template v-if="column.key === 'rank'">
@@ -68,7 +124,7 @@
             :loading="loading && concept.length === 0"
             size="small"
             row-key="code"
-            @row="rowTo('concept')"
+            :custom-row="rowTo('concept')"
           >
             <template #bodyCell="{ column, record, index }">
               <template v-if="column.key === 'rank'">
@@ -111,15 +167,23 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getConceptList, getIndustryList } from '@/services/api'
+import { getConceptList, getIndustryList, getZTPool } from '@/services/api'
 import { sortBoardRankings, type BoardRankingType } from '@/services/rankings'
-import type { Board } from '@/types'
-import { formatMarketCap, formatPercent, formatTurnover, getChangeColorClass } from '@/utils/format'
+import type { Board, ZTPoolItem } from '@/types'
+import {
+  formatAmount,
+  formatMarketCap,
+  formatPercent,
+  formatTurnover,
+  formatYuanAmount,
+  getChangeColorClass,
+} from '@/utils/format'
 
 const router = useRouter()
 const rankType = ref<BoardRankingType>('rise')
 const industry = ref<Board[]>([])
 const concept = ref<Board[]>([])
+const limitUpPool = ref<ZTPoolItem[]>([])
 const loading = ref(false)
 const errorMessage = ref('')
 const rankOptions = [
@@ -139,14 +203,43 @@ const columns = [
   { title: '换手', key: 'turnoverRate', width: 80 },
 ]
 
+const limitUpColumns = [
+  { title: '排名', key: 'rank', width: 66 },
+  { title: '股票', key: 'name', width: 140 },
+  { title: '涨幅', key: 'changePercent', width: 90 },
+  { title: '连板', key: 'continuousBoardCount', width: 86 },
+  { title: '封板时间', key: 'boardTime', width: 120 },
+  { title: '行业', key: 'industry', width: 120 },
+  { title: '统计', key: 'ztStatistics', width: 90 },
+  { title: '成交额', key: 'amount', width: 100 },
+  { title: '换手', key: 'turnoverRate', width: 80 },
+]
+
 const sortedIndustry = computed(() => sortBoardRankings(industry.value, rankType.value, 50))
 const sortedConcept = computed(() => sortBoardRankings(concept.value, rankType.value, 50))
+const maxContinuousBoards = computed(() => {
+  return Math.max(0, ...limitUpPool.value.map((item) => Number(item.continuousBoardCount || 0)))
+})
+const earliestFirstBoardTime = computed(() => {
+  return limitUpPool.value
+    .map((item) => item.firstBoardTime)
+    .filter((time): time is string => Boolean(time))
+    .sort()[0] || '--'
+})
+const totalSealAmount = computed(() => {
+  const total = limitUpPool.value.reduce((sum, item) => sum + Number(item.sealAmount || item.boardAmount || 0), 0)
+  return total > 0 ? total : null
+})
 
 async function load() {
   loading.value = true
   errorMessage.value = ''
   try {
-    ;[industry.value, concept.value] = await Promise.all([getIndustryList(), getConceptList()])
+    ;[industry.value, concept.value, limitUpPool.value] = await Promise.all([
+      getIndustryList(),
+      getConceptList(),
+      getZTPool(),
+    ])
   } catch (error) {
     console.warn('Rankings data loading failed', error)
     errorMessage.value = '榜单数据加载失败，请稍后刷新'
@@ -161,6 +254,17 @@ function rowTo(type: 'industry' | 'concept') {
   })
 }
 
+function stockRowTo(record: ZTPoolItem) {
+  return {
+    onClick: () => router.push(`/s/${record.code}`),
+  }
+}
+
+function formatBoardCount(value: number | null | undefined) {
+  if (!value || Number.isNaN(value)) return '--'
+  return `${Math.floor(value)}连板`
+}
+
 onMounted(load)
 </script>
 
@@ -173,6 +277,15 @@ onMounted(load)
 
 .board-name {
   font-weight: 600;
+}
+
+.limit-up-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .rank-num {
@@ -198,6 +311,10 @@ onMounted(load)
   .page-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .limit-up-summary {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
   }
 }
 </style>

@@ -133,6 +133,28 @@ export interface Board {
   leadingStockChangePercent?: number | null
 }
 
+export interface ZTPoolItem {
+  code: string
+  name: string
+  price?: number | null
+  changePercent?: number | null
+  limitPrice?: number | null
+  amount?: number | null
+  floatMarketValue?: number | null
+  totalMarketValue?: number | null
+  turnoverRate?: number | null
+  continuousBoardCount?: number | null
+  firstBoardTime?: string | null
+  lastBoardTime?: string | null
+  boardAmount?: number | null
+  sealAmount?: number | null
+  failedCount?: number | null
+  industry?: string | null
+  ztStatistics?: string | null
+  amplitude?: number | null
+  speed?: number | null
+}
+
 export interface SearchResult {
   code: string
   name: string
