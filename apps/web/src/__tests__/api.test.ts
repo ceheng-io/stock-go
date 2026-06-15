@@ -21,6 +21,24 @@ describe('api client', () => {
     })
   })
 
+  it('keeps the requested exchange prefix when full quote payloads return bare codes', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => [
+          { Code: '000001', Name: '上证指数' },
+          { Code: '000001', Name: '平安银行' },
+        ],
+      }),
+    )
+
+    await expect(getFullQuotes(['sh000001', 'sz000001'])).resolves.toEqual([
+      { code: 'sh000001', name: '上证指数' },
+      { code: 'sz000001', name: '平安银行' },
+    ])
+  })
+
   it('normalizes Go json field names to camel case', async () => {
     vi.stubGlobal(
       'fetch',

@@ -100,8 +100,42 @@ function codesQuery(codes: string[]) {
   return query({ codes: codes.join(',') })
 }
 
+function quoteSymbol(code: string): string {
+  const trimmed = code.trim()
+  const prefixMatch = trimmed.match(/^(sh|sz|bj)\.?(\d{6})$/i)
+  if (prefixMatch) return prefixMatch[2]
+  const suffixMatch = trimmed.match(/^(\d{6})\.(sh|sz|bj)$/i)
+  if (suffixMatch) return suffixMatch[1]
+  return trimmed
+}
+
+function normalizeRequestedQuoteCode(code: string): string {
+  const trimmed = code.trim()
+  const prefixMatch = trimmed.match(/^(sh|sz|bj)\.?(\d{6})$/i)
+  if (prefixMatch) return `${prefixMatch[1].toLowerCase()}${prefixMatch[2]}`
+  const suffixMatch = trimmed.match(/^(\d{6})\.(sh|sz|bj)$/i)
+  if (suffixMatch) return `${suffixMatch[2].toLowerCase()}${suffixMatch[1]}`
+  return trimmed
+}
+
+function restoreRequestedQuoteCodes(rows: FullQuote[], requestedCodes: string[]): FullQuote[] {
+  const requestedBySymbol = new Map<string, string[]>()
+  requestedCodes.map(normalizeRequestedQuoteCode).forEach((code) => {
+    const symbol = quoteSymbol(code)
+    if (!symbol) return
+    const codes = requestedBySymbol.get(symbol) || []
+    codes.push(code)
+    requestedBySymbol.set(symbol, codes)
+  })
+
+  return rows.map((row) => {
+    const requestedCode = requestedBySymbol.get(quoteSymbol(row.code))?.shift()
+    return requestedCode && requestedCode !== row.code ? { ...row, code: requestedCode } : row
+  })
+}
+
 export function getFullQuotes(codes: string[]) {
-  return apiRequest<FullQuote[]>(`/quotes/full${codesQuery(codes)}`)
+  return apiRequest<FullQuote[]>(`/quotes/full${codesQuery(codes)}`).then((rows) => restoreRequestedQuoteCodes(rows, codes))
 }
 
 export function getAllQuotesByCodes(codes: string[], options?: { batchSize?: number; concurrency?: number }) {
