@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -29,6 +30,22 @@ func TestWithProxyPoolOptionsCopiesURLs(t *testing.T) {
 
 	if got := client.config.ProxyPool.URLs; len(got) != 1 || got[0] != "http://proxy-a.test:8080" {
 		t.Fatalf("ProxyPool.URLs = %#v, want immutable copy", got)
+	}
+}
+
+func TestNewWiresProxyPoolToCoreClient(t *testing.T) {
+	proxyServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer proxyServer.Close()
+
+	client := New(WithProxyPool([]string{proxyServer.URL}))
+	text, err := client.core.GetText(context.Background(), "http://target.test/path")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if text != "ok" {
+		t.Fatalf("text = %q, want ok", text)
 	}
 }
 

@@ -50,10 +50,13 @@ func New(options ...Option) *Client {
 		FundListURL:       config.FundListURL,
 		EastmoneyKlineURL: config.EastmoneyKlineURL,
 		HTTPClient:        config.HTTPClient,
-		Timeout:           config.Timeout,
-		UserAgent:         config.UserAgent,
-		RotateUserAgent:   config.RotateUserAgent,
-		Headers:           cloneStringMap(config.Headers),
+		ProxyPool: core.ProxyPoolConfig{
+			URLs: append([]string(nil), config.ProxyPool.URLs...),
+		},
+		Timeout:         config.Timeout,
+		UserAgent:       config.UserAgent,
+		RotateUserAgent: config.RotateUserAgent,
+		Headers:         cloneStringMap(config.Headers),
 		Retry: core.RetryConfig{
 			MaxRetries:           config.Retry.MaxRetries,
 			BaseDelay:            config.Retry.BaseDelay,
