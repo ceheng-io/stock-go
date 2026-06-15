@@ -1,0 +1,90 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { apiRequest, getBoardSpot, getFullQuotes } from '@/services/api'
+
+describe('api client', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('joins quote codes in the query string', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [{ Code: 'sh600519', Name: '贵州茅台' }],
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await getFullQuotes(['sh600519', 'sz000001'])
+
+    expect(result).toEqual([{ code: 'sh600519', name: '贵州茅台' }])
+    expect(fetchMock).toHaveBeenCalledWith('/api/quotes/full?codes=sh600519%2Csz000001', {
+      headers: { Accept: 'application/json' },
+    })
+  })
+
+  it('normalizes Go json field names to camel case', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => [
+          {
+            Code: 'sh600519',
+            ChangePercent: 1.23,
+            TotalMarketCap: 25000,
+            PEStatic: 28.5,
+            TZ: 'Asia/Shanghai',
+            Bid: [{ Price: 1688, Volume: 100 }],
+          },
+        ],
+      }),
+    )
+
+    await expect(getFullQuotes(['sh600519'])).resolves.toEqual([
+      {
+        code: 'sh600519',
+        changePercent: 1.23,
+        totalMarketCap: 25000,
+        peStatic: 28.5,
+        tz: 'Asia/Shanghai',
+        bid: [{ price: 1688, volume: 100 }],
+      },
+    ])
+  })
+
+  it('throws structured api errors', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ error: { message: 'keyword is required' } }),
+      }),
+    )
+
+    await expect(apiRequest('/search')).rejects.toMatchObject({
+      message: 'keyword is required',
+      status: 400,
+    })
+  })
+
+  it('normalizes object-like board spot payloads into metric rows', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          Price: 1234.56,
+          ChangePercent: 1.23,
+          TotalMarketCap: 987654321,
+          Name: '酿酒行业',
+        }),
+      }),
+    )
+
+    await expect(getBoardSpot('industry', 'BK0475')).resolves.toEqual([
+      { item: 'price', value: 1234.56 },
+      { item: 'changePercent', value: 1.23 },
+      { item: 'totalMarketCap', value: 987654321 },
+    ])
+  })
+})

@@ -1,0 +1,241 @@
+import type { Board, FullQuote, SearchResult } from '@/types'
+import { normalizeBoardSpotRows, type BoardSpotRow } from '@/services/charts'
+
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+type QueryValue = string | number | boolean | undefined | null
+
+const INITIALISM_PREFIXES = [
+  'MACD',
+  'BOLL',
+  'KDJ',
+  'DMI',
+  'ADX',
+  'RSI',
+  'OBV',
+  'ROC',
+  'SAR',
+  'JSON',
+  'HTML',
+  'HTTP',
+  'HTTPS',
+  'URL',
+  'API',
+  'SDK',
+  'EPS',
+  'BPS',
+  'SH',
+  'SZ',
+  'HK',
+  'US',
+  'CN',
+  'ZT',
+  'PE',
+  'PB',
+  'TZ',
+  'ID',
+] as const
+
+export class ApiError extends Error {
+  status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
+export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...init,
+    headers: {
+      Accept: 'application/json',
+      ...init?.headers,
+    },
+  })
+
+  if (!response.ok) {
+    let message = response.statusText || `HTTP ${response.status}`
+    try {
+      const body = (await response.json()) as { error?: { message?: string } }
+      message = body.error?.message || message
+    } catch {
+      // Keep status text when the server does not return JSON.
+    }
+    throw new ApiError(message, response.status)
+  }
+
+  return camelizeKeys(await response.json()) as T
+}
+
+function toCamelKey(key: string): string {
+  if (!key || /^[a-z]/.test(key)) return key
+  const prefix = INITIALISM_PREFIXES.find((item) => key.startsWith(item))
+  if (prefix) {
+    return `${prefix.toLowerCase()}${key.slice(prefix.length)}`
+  }
+  return `${key.charAt(0).toLowerCase()}${key.slice(1)}`.replace(/ID$/, 'Id').replace(/URL$/, 'Url')
+}
+
+function camelizeKeys(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map((item) => camelizeKeys(item))
+  if (value === null || typeof value !== 'object') return value
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [toCamelKey(key), camelizeKeys(item)]),
+  )
+}
+
+function query(params: Record<string, QueryValue>): string {
+  const search = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      search.set(key, String(value))
+    }
+  })
+  const value = search.toString()
+  return value ? `?${value}` : ''
+}
+
+function codesQuery(codes: string[]) {
+  return query({ codes: codes.join(',') })
+}
+
+export function getFullQuotes(codes: string[]) {
+  return apiRequest<FullQuote[]>(`/quotes/full${codesQuery(codes)}`)
+}
+
+export function getAllQuotesByCodes(codes: string[], options?: { batchSize?: number; concurrency?: number }) {
+  return apiRequest<FullQuote[]>(`/quotes/batch${query({ codes: codes.join(','), ...options })}`)
+}
+
+export function getAllAShareQuotes(options?: { batchSize?: number; concurrency?: number }) {
+  return apiRequest<FullQuote[]>(`/quotes/a-share${query(options || {})}`)
+}
+
+export function search(keyword: string) {
+  return apiRequest<SearchResult[]>(`/search${query({ keyword })}`)
+}
+
+export function getIndustryList() {
+  return apiRequest<Board[]>('/boards/industry')
+}
+
+export function getConceptList() {
+  return apiRequest<Board[]>('/boards/concept')
+}
+
+export function getIndustryConstituents(code: string) {
+  return apiRequest(`/boards/industry/${encodeURIComponent(code)}/constituents`)
+}
+
+export function getConceptConstituents(code: string) {
+  return apiRequest(`/boards/concept/${encodeURIComponent(code)}/constituents`)
+}
+
+export function getHistoryKline(symbol: string, options?: Record<string, string>) {
+  return apiRequest(`/kline/history${query({ symbol, ...options })}`)
+}
+
+export function getMinuteKline(symbol: string, options?: Record<string, string>) {
+  return apiRequest(`/kline/minute${query({ symbol, ...options })}`)
+}
+
+export function getKlineWithIndicators(symbol: string, options?: Record<string, string | boolean>) {
+  return apiRequest(`/kline/indicators${query({ symbol, ...options })}`)
+}
+
+export function getTodayTimeline(code: string) {
+  return apiRequest(`/timeline/today${query({ code })}`)
+}
+
+export function getBoardSpot(type: 'industry' | 'concept', code: string) {
+  return apiRequest<unknown>(`/boards/${type}/${encodeURIComponent(code)}/spot`).then((value): BoardSpotRow[] => normalizeBoardSpotRows(value))
+}
+
+export function getBoardKline(type: 'industry' | 'concept', code: string, options?: Record<string, QueryValue>) {
+  return apiRequest(`/boards/${type}/${encodeURIComponent(code)}/kline${query(options || {})}`)
+}
+
+export function getBoardMinuteKline(type: 'industry' | 'concept', code: string, options?: Record<string, QueryValue>) {
+  return apiRequest(`/boards/${type}/${encodeURIComponent(code)}/minute${query(options || {})}`)
+}
+
+export function getQuoteFundFlow(codes: string[]) {
+  return apiRequest(`/fund-flow/quotes${codesQuery(codes)}`)
+}
+
+export function getPanelLargeOrder(codes: string[]) {
+  return apiRequest(`/panel-large-order${codesQuery(codes)}`)
+}
+
+export function getIndividualFundFlow(symbol: string, options?: Record<string, QueryValue>) {
+  return apiRequest(`/fund-flow/individual${query({ symbol, ...options })}`)
+}
+
+export function getMarketFundFlow() {
+  return apiRequest('/fund-flow/market')
+}
+
+export function getFundFlowRank(options?: Record<string, QueryValue>) {
+  return apiRequest(`/fund-flow/rank${query(options || {})}`)
+}
+
+export function getSectorFundFlowRank(options?: Record<string, QueryValue>) {
+  return apiRequest(`/fund-flow/sector-rank${query(options || {})}`)
+}
+
+export function getSectorFundFlowHistory(symbol: string, options?: Record<string, QueryValue>) {
+  return apiRequest(`/fund-flow/sector-history${query({ symbol, ...options })}`)
+}
+
+export function getNorthboundMinute(direction: 'north' | 'south' = 'north') {
+  return apiRequest(`/northbound/minute${query({ direction })}`)
+}
+
+export function getNorthboundFlowSummary() {
+  return apiRequest('/northbound/summary')
+}
+
+export function getNorthboundHoldingRank(options?: Record<string, QueryValue>) {
+  return apiRequest(`/northbound/holding-rank${query(options || {})}`)
+}
+
+export function getNorthboundHistory(direction: 'north' | 'south' = 'north', options?: Record<string, QueryValue>) {
+  return apiRequest(`/northbound/history${query({ direction, ...options })}`)
+}
+
+export function getNorthboundIndividual(symbol: string, options?: Record<string, QueryValue>) {
+  return apiRequest(`/northbound/individual${query({ symbol, ...options })}`)
+}
+
+export function getZTPool(type = 'zt', date?: string) {
+  return apiRequest(`/market-event/zt-pool${query({ type, date })}`)
+}
+
+export function getStockChanges(type = 'large_buy') {
+  return apiRequest(`/market-event/stock-changes${query({ type })}`)
+}
+
+export function getBoardChanges() {
+  return apiRequest('/market-event/board-changes')
+}
+
+export function getDragonTigerDetail(options?: Record<string, QueryValue>) {
+  return apiRequest(`/dragon-tiger/detail${query(options || {})}`)
+}
+
+export function getBlockTradeDetail(options?: Record<string, QueryValue>) {
+  return apiRequest(`/block-trade/detail${query(options || {})}`)
+}
+
+export function getMarginAccountInfo() {
+  return apiRequest('/margin/account')
+}
+
+export function getDividendDetail(symbol: string) {
+  return apiRequest(`/dividends${query({ symbol })}`)
+}
+
+export function getTradingCalendar() {
+  return apiRequest<string[]>('/trading-calendar')
+}

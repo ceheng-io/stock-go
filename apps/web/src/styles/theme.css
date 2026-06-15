@@ -1,0 +1,15 @@
+:root {
+  --color-bg: #f5f7fb;
+  --color-surface: #ffffff;
+  --color-border: #d9e0ea;
+  --color-text: #172033;
+  --color-muted: #69758a;
+  --color-rise: #dc2626;
+  --color-fall: #16a34a;
+  --color-flat: #64748b;
+}
+
+:root[data-color-mode='green-rise'] {
+  --color-rise: #16a34a;
+  --color-fall: #dc2626;
+}

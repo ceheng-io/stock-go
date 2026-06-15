@@ -1,0 +1,33 @@
+# Local planning artifacts
+docs/superpowers/
+
+# Go build/test artifacts
+bin/
+dist/
+**/dist/
+_output
+*.test
+*.out
+coverage.*
+
+# Frontend dependencies/build cache
+node_modules/
+**/node_modules/
+
+# Go workspace/vendor scratch
+go.work
+go.work.sum
+vendor/
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+.claude/
+
+# Environment files
+.env
+.env.*
+!.env.example
