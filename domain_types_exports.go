@@ -80,6 +80,15 @@ type ZTPoolItem = domaintypes.ZTPoolItem
 type StockChangeType = domaintypes.StockChangeType
 type StockChangeItem = domaintypes.StockChangeItem
 type BoardChangeItem = domaintypes.BoardChangeItem
+type THSLimitUpOrderField = domaintypes.THSLimitUpOrderField
+type THSLimitUpOrderType = domaintypes.THSLimitUpOrderType
+type THSLimitUpPoolOptions = domaintypes.THSLimitUpPoolOptions
+type THSLimitUpPoolResult = domaintypes.THSLimitUpPoolResult
+type THSLimitUpPage = domaintypes.THSLimitUpPage
+type THSLimitStatGroup = domaintypes.THSLimitStatGroup
+type THSLimitStat = domaintypes.THSLimitStat
+type THSTradeStatus = domaintypes.THSTradeStatus
+type THSLimitUpItem = domaintypes.THSLimitUpItem
 
 const (
 	ZTPoolZT        = domaintypes.ZTPoolZT
@@ -111,6 +120,12 @@ const (
 	StockChangeGapDown        = domaintypes.StockChangeGapDown
 	StockChangeLow60D         = domaintypes.StockChangeLow60D
 	StockChangeDrop60D        = domaintypes.StockChangeDrop60D
+
+	THSLimitUpOrderFirstLimitUpTime = domaintypes.THSLimitUpOrderFirstLimitUpTime
+	THSLimitUpOrderLastLimitUpTime  = domaintypes.THSLimitUpOrderLastLimitUpTime
+	THSLimitUpOrderOpenNum          = domaintypes.THSLimitUpOrderOpenNum
+	THSLimitUpOrderDesc             = domaintypes.THSLimitUpOrderDesc
+	THSLimitUpOrderAsc              = domaintypes.THSLimitUpOrderAsc
 )
 
 type DragonTigerDetailItem = domaintypes.DragonTigerDetailItem

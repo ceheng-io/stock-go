@@ -54,6 +54,9 @@ func TestRootReExportsTSCoreConstantNames(t *testing.T) {
 	if SINA_OPTION_API_URL != SinaOptionAPIURL || EM_OPTION_CFFEX_URL != EMOptionCFFEXURL {
 		t.Fatalf("TS-style option URL constants are not wired")
 	}
+	if THS_LIMIT_UP_POOL_URL != THSLimitUpPoolURL || THSLimitUpPoolURL != "https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool" {
+		t.Fatalf("THS limit-up URL constants are not wired")
+	}
 	if DEFAULT_TIMEOUT != DefaultTimeoutMS || DEFAULT_MAX_RETRIES != DefaultMaxRetries || DEFAULT_BASE_DELAY != DefaultBaseDelayMS {
 		t.Fatalf("TS-style default constants are not wired")
 	}

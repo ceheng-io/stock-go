@@ -52,7 +52,7 @@
 | `getKlineWithIndicators` | `client.Indicator.KlineWithIndicators`、`client.GetKlineWithIndicators` | 已覆盖 |
 | 深度资金流方法 | `client.FundFlow.*`、`client.GetIndividualFundFlow` 等 | 已覆盖 |
 | 北向资金方法 | `client.Northbound.*`、`client.GetNorthbound*` | 已覆盖 |
-| 涨停/异动方法 | `client.MarketEvent.*`、`client.GetZTPool` / `GetStockChanges` / `GetBoardChanges` | 已覆盖 |
+| 涨停/异动方法 | `client.MarketEvent.*`、`client.GetZTPool` / `GetStockChanges` / `GetBoardChanges` / `GetTHSLimitUpPool` | 已覆盖 |
 | 龙虎榜方法 | `client.DragonTiger.*`、`client.GetDragonTiger*` | 已覆盖 |
 | 大宗交易方法 | `client.BlockTrade.*`、`client.Data.BlockTrade*`、`client.GetBlockTrade*` | 已覆盖 |
 | 融资融券方法 | `client.Margin.*`、`client.Data.Margin*`、`client.GetMargin*` | 已覆盖 |
@@ -63,7 +63,7 @@
 | TS 导出 | Go 映射 | 状态 |
 | --- | --- | --- |
 | 指标函数与类型 | 根包薄转发 + `indicators` 子包 | 已覆盖 | 根包和 `indicators` 子包均保留 `BuildIndicatorContext`、`GetEnabledIndicatorKeys`、`EstimateIndicatorLookback`、`IndicatorRegistry` / `INDICATOR_REGISTRY` 等 TS 风格命名。 |
-| 公开领域类型 | 根包类型别名 + `types` 子包 | 已覆盖 | 行业/概念板块类型、`StockFundFlowDaily`、`AnyHistoryKline`、`ZTPoolType`、`StockChangeType`、`NorthboundDirection`、`NorthboundMarket`、`NorthboundRankPeriod`、`DragonTigerPeriod`、`DragonTigerDateOptions`、`BlockTradeDateOptions`、`FundDividendRank`、`ETFOptionCate`、`IndexOptionProduct`、`types.FuturesExchange` 等 TS 兼容别名、联合类型、字符串枚举和领域选项已保留。 |
+| 公开领域类型 | 根包类型别名 + `types` 子包 | 已覆盖 | 行业/概念板块类型、`StockFundFlowDaily`、`AnyHistoryKline`、`ZTPoolType`、`StockChangeType`、`THSLimitUpPoolOptions`、`THSLimitUpPoolResult`、`NorthboundDirection`、`NorthboundMarket`、`NorthboundRankPeriod`、`DragonTigerPeriod`、`DragonTigerDateOptions`、`BlockTradeDateOptions`、`FundDividendRank`、`ETFOptionCate`、`IndexOptionProduct`、`types.FuturesExchange` 等 TS 兼容别名、联合类型、字符串枚举和领域选项已保留。 |
 | 公开选项类型 | 根包类型别名/兼容结构 | 已覆盖 | `GetAShareCodeListOptions`、`GetAllAShareQuotesOptions`、`GetAllHKQuotesOptions`、`GetUSCodeListOptions`、`GetAllUSQuotesOptions` 等 TS 顶层名称已保留；Go service 方法仍按 code-list options 与 batch options 拆分入参。 |
 | `calcSignals` | `stock.CalcSignals` + `signals` 子包 | 已覆盖 |
 | `screen` / `backtest` | `stock.Screen` / `stock.Backtest` + `screener` 子包 | 已覆盖 |

@@ -386,6 +386,11 @@ func (c *Client) GetBoardChanges(ctx context.Context) ([]BoardChangeItem, error)
 	return c.MarketEvent.BoardChanges(ctx)
 }
 
+// GetTHSLimitUpPool fetches Tonghuashun limit-up pool rows.
+func (c *Client) GetTHSLimitUpPool(ctx context.Context, options ...THSLimitUpPoolOptions) (THSLimitUpPoolResult, error) {
+	return c.MarketEvent.THSLimitUpPool(ctx, firstOption(options))
+}
+
 // GetDragonTigerDetail fetches dragon-tiger billboard detail rows.
 func (c *Client) GetDragonTigerDetail(ctx context.Context, options DragonTigerDateOptions) ([]DragonTigerDetailItem, error) {
 	return c.DragonTiger.Detail(ctx, options)

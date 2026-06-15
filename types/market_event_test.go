@@ -71,4 +71,13 @@ func TestMarketEventTypeConstantsMatchTSUnions(t *testing.T) {
 			t.Fatalf("changes[%d] = %q, want %q", index, value, wantChanges[index])
 		}
 	}
+
+	if string(THSLimitUpOrderFirstLimitUpTime) != "330323" ||
+		string(THSLimitUpOrderLastLimitUpTime) != "330324" ||
+		string(THSLimitUpOrderOpenNum) != "330325" {
+		t.Fatalf("unexpected ths limit-up order fields")
+	}
+	if string(THSLimitUpOrderDesc) != "0" || string(THSLimitUpOrderAsc) != "1" {
+		t.Fatalf("unexpected ths limit-up order types")
+	}
 }

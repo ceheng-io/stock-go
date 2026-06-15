@@ -84,3 +84,99 @@ type BoardChangeItem struct {
 	TopStockDirection      string
 	ChangeTypeDistribution map[string]float64
 }
+
+// THSLimitUpOrderField identifies a Tonghuashun limit-up pool sort field.
+type THSLimitUpOrderField string
+
+const (
+	THSLimitUpOrderFirstLimitUpTime THSLimitUpOrderField = "330323"
+	THSLimitUpOrderLastLimitUpTime  THSLimitUpOrderField = "330324"
+	THSLimitUpOrderOpenNum          THSLimitUpOrderField = "330325"
+)
+
+// THSLimitUpOrderType identifies Tonghuashun sort direction.
+type THSLimitUpOrderType string
+
+const (
+	THSLimitUpOrderDesc THSLimitUpOrderType = "0"
+	THSLimitUpOrderAsc  THSLimitUpOrderType = "1"
+)
+
+// THSLimitUpPoolOptions controls Tonghuashun limit-up pool requests.
+type THSLimitUpPoolOptions struct {
+	Date       string
+	Page       int
+	Limit      int
+	Filter     string
+	OrderField THSLimitUpOrderField
+	OrderType  THSLimitUpOrderType
+}
+
+// THSLimitUpPoolResult is a Tonghuashun limit-up pool page.
+type THSLimitUpPoolResult struct {
+	Page           THSLimitUpPage
+	Items          []THSLimitUpItem
+	LimitUpCount   THSLimitStatGroup
+	LimitDownCount THSLimitStatGroup
+	Date           string
+	Message        string
+	TradeStatus    THSTradeStatus
+}
+
+// THSLimitUpPage describes Tonghuashun pagination metadata.
+type THSLimitUpPage struct {
+	Limit int
+	Total int
+	Count int
+	Page  int
+}
+
+// THSLimitStatGroup contains today's and yesterday's up/down limit statistics.
+type THSLimitStatGroup struct {
+	Today     THSLimitStat
+	Yesterday THSLimitStat
+}
+
+// THSLimitStat describes Tonghuashun limit-up/down statistics.
+type THSLimitStat struct {
+	Num        int
+	HistoryNum int
+	Rate       *float64
+	OpenNum    int
+}
+
+// THSTradeStatus describes Tonghuashun market status metadata.
+type THSTradeStatus struct {
+	ID        string
+	Name      string
+	StartTime string
+	EndTime   string
+}
+
+// THSLimitUpItem is a Tonghuashun limit-up pool row.
+type THSLimitUpItem struct {
+	Code                 string
+	Name                 string
+	Latest               *float64
+	ChangeRate           *float64
+	FirstLimitUpTime     *int64
+	FirstLimitUpTimeText string
+	LastLimitUpTime      *int64
+	LastLimitUpTimeText  string
+	OpenNum              *int
+	LimitUpType          string
+	OrderVolume          *float64
+	OrderAmount          *float64
+	TurnoverRate         *float64
+	CurrencyValue        *float64
+	ReasonType           string
+	HighDays             string
+	HighDaysValue        *int
+	ChangeTag            string
+	MarketType           string
+	MarketID             *int
+	IsNew                *int
+	IsAgainLimit         *int
+	LimitUpSuccessRate   *float64
+	TimePreview          []float64
+}

@@ -17,6 +17,7 @@ const (
 	ProviderEastmoney ProviderName = "eastmoney"
 	ProviderSina      ProviderName = "sina"
 	ProviderLinkdiary ProviderName = "linkdiary"
+	ProviderTHS       ProviderName = "ths"
 	ProviderUnknown   ProviderName = "unknown"
 )
 
@@ -243,6 +244,8 @@ func inferProviderFromURL(requestURL string) ProviderName {
 		return ProviderSina
 	case strings.Contains(host, "linkdiary.cn"):
 		return ProviderLinkdiary
+	case strings.Contains(host, "10jqka.com.cn"):
+		return ProviderTHS
 	default:
 		return ProviderUnknown
 	}

@@ -75,6 +75,8 @@ func TestRootReExportsDomainDataTypes(t *testing.T) {
 	var _ ZTPoolItem = ZTPoolItem{Code: "600519", FirstBoardTime: stringPtrForDomainTest("09:30:05")}
 	var _ StockChangeItem = StockChangeItem{Code: "600519", ChangeType: StockChangeLargeBuy}
 	var _ BoardChangeItem = BoardChangeItem{Name: "白酒"}
+	var _ THSLimitUpPoolOptions = THSLimitUpPoolOptions{Date: "20250613", OrderField: THSLimitUpOrderLastLimitUpTime, OrderType: THSLimitUpOrderDesc}
+	var _ THSLimitUpPoolResult = THSLimitUpPoolResult{Items: []THSLimitUpItem{{Code: "002190"}}}
 	var _ DragonTigerDetailItem = DragonTigerDetailItem{Code: "600519"}
 	var _ DragonTigerStockStatItem = DragonTigerStockStatItem{Code: "600519"}
 	var _ DragonTigerInstitutionItem = DragonTigerInstitutionItem{Code: "600519"}

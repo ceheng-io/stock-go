@@ -152,6 +152,8 @@ func InferProviderFromURL(rawURL string, explicitProvider ProviderName) Provider
 		return ProviderSina
 	case strings.Contains(host, "linkdiary.cn"):
 		return ProviderLinkdiary
+	case strings.Contains(host, "10jqka.com.cn"):
+		return ProviderTHS
 	default:
 		return ProviderUnknown
 	}

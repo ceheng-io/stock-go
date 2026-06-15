@@ -50,7 +50,7 @@ module github.com/ceheng.io/stock-go
 - `Dividend.Detail`：东方财富个股分红派送详情基础能力。
 - `Data.Search`、`Data.CodesCN`、`Data.CodesUS`、`Data.CodesHK`、`Data.CodesFund`、`Data.BlockTradeDetail`、`Data.MarginTargetList`、`Data.DividendDetail`：搜索、代码列表、大宗交易、融资融券和分红等数据类聚合入口。
 - `DatacenterQuery`、`DatacenterResult`、`ParseDCDate`：东方财富 datacenter-web 通用分页查询参数、结果模型和日期解析辅助能力。
-- `MarketEvent.ZTPool`、`MarketEvent.StockChanges`、`MarketEvent.BoardChanges`：东方财富涨停股池、个股盘口异动和板块异动基础能力。
+- `MarketEvent.ZTPool`、`MarketEvent.StockChanges`、`MarketEvent.BoardChanges`、`MarketEvent.THSLimitUpPool`：东方财富涨停股池、个股盘口异动、板块异动，以及同花顺当日/历史涨停池基础能力。
 - `Fund.Estimate`、`Fund.NavHistory`、`Fund.RankHistory`、`Fund.DividendList`：天天基金/东方财富基金当日实时估值、历史净值、同类排名走势和分红列表基础能力。
 - `Futures.Kline`、`Futures.GlobalSpot`、`Futures.GlobalKline`、`Futures.InventorySymbols`、`Futures.Inventory`、`Futures.ComexInventory`：东方财富国内期货历史 K 线、全球期货实时行情、全球期货历史 K 线、国内期货库存和 COMEX 黄金/白银库存基础能力。
 - 期货工具：`ExtractFuturesVariety`、`FuturesMarketCode`，对应 TS 版 Eastmoney 期货 K 线 provider 的品种提取和 market code 查找能力。

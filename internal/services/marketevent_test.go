@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/ceheng.io/stock-go/internal/providers/eastmoney"
+	"github.com/ceheng.io/stock-go/types"
 )
 
 type marketEventClientStub struct {
@@ -57,5 +58,27 @@ func TestMarketEventServiceZTPoolStockChangesAndBoardChanges(t *testing.T) {
 	}
 	if len(boards) != 1 || boards[0].TopStockDirection != "大笔卖出" {
 		t.Fatalf("boards = %+v", boards)
+	}
+}
+
+func TestMarketEventServiceTHSLimitUpPool(t *testing.T) {
+	client := &marketEventClientStub{payload: map[string]any{
+		"status_code": 0.0,
+		"data": map[string]any{
+			"page": map[string]any{"limit": 1.0, "total": 1.0, "count": 1.0, "page": 1.0},
+			"info": []map[string]any{
+				{"code": "002190", "name": "成飞集成", "last_limit_up_time": "1749797760"},
+			},
+			"date": "20250613",
+		},
+	}}
+	service := NewMarketEventService(client, "https://topic.test", "https://ths.test/limit_up_pool")
+
+	result, err := service.THSLimitUpPool(context.Background(), types.THSLimitUpPoolOptions{Date: "2025-06-13"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Date != "20250613" || len(result.Items) != 1 || result.Items[0].Code != "002190" {
+		t.Fatalf("result = %+v", result)
 	}
 }

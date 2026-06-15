@@ -1595,6 +1595,51 @@ func TestClientMarketEvent(t *testing.T) {
 	}
 }
 
+func TestClientTHSLimitUpPool(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/limit_up_pool" {
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+		if r.URL.Query().Get("date") != "20250613" || r.URL.Query().Get("order_field") != "330324" {
+			t.Fatalf("query = %v", r.URL.Query())
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"status_code": 0,
+			"data": map[string]any{
+				"page": map[string]any{"limit": 1, "total": 1, "count": 1, "page": 1},
+				"info": []map[string]any{
+					{"code": "002190", "name": "成飞集成", "last_limit_up_time": "1749797760"},
+				},
+				"date": "20250613",
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := New(
+		WithTHSLimitUpPoolURL(server.URL+"/limit_up_pool"),
+		WithHTTPClient(server.Client()),
+	)
+	result, err := client.GetTHSLimitUpPool(context.Background(), THSLimitUpPoolOptions{Date: "2025-06-13", Limit: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Date != "20250613" || len(result.Items) != 1 || result.Items[0].Code != "002190" {
+		t.Fatalf("result = %+v", result)
+	}
+}
+
+func TestClientDefaultTHSProviderPolicyAddsBrowserHeaders(t *testing.T) {
+	client := New()
+	policy, ok := client.core.ProviderPolicy(ProviderTHS)
+	if !ok {
+		t.Fatal("missing ths provider policy")
+	}
+	if policy.UserAgent == "" || policy.Headers["Referer"] != "https://data.10jqka.com.cn/market/ztStock/" || policy.Headers["Cookie"] == "" {
+		t.Fatalf("policy = %+v", policy)
+	}
+}
+
 func TestClientMarketEventInvalidArgumentsReturnInvalidArgument(t *testing.T) {
 	client := New()
 	tests := []struct {

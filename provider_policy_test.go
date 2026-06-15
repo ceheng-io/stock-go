@@ -130,6 +130,7 @@ func TestInferProviderFromURL(t *testing.T) {
 		"https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=1.600519": ProviderEastmoney,
 		"https://stock.finance.sina.com.cn/futures/api/openapi.php":            ProviderSina,
 		"https://assets.linkdiary.cn/shares/zh_a_list.json":                    ProviderLinkdiary,
+		"https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool":            ProviderTHS,
 		"://bad-url": ProviderUnknown,
 	}
 

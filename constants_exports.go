@@ -98,6 +98,9 @@ const (
 	SINA_SSE_OPTION_DAILY_URL  = constants.SINA_SSE_OPTION_DAILY_URL
 	SINA_SSE_OPTION_5DAY_URL   = constants.SINA_SSE_OPTION_5DAY_URL
 
+	THSLimitUpPoolURL     = constants.THSLimitUpPoolURL
+	THS_LIMIT_UP_POOL_URL = constants.THS_LIMIT_UP_POOL_URL
+
 	DefaultTimeoutMS           = constants.DefaultTimeoutMS
 	DefaultBatchSize           = constants.DefaultBatchSize
 	MaxBatchSize               = constants.MaxBatchSize

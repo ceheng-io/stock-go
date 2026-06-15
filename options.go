@@ -61,6 +61,7 @@ type Config struct {
 	SinaIndexOptionKlineURL          string
 	SinaCommodityOptionSpotURL       string
 	SinaCommodityOptionKlineURL      string
+	THSLimitUpPoolURL                string
 	Timeout                          time.Duration
 	UserAgent                        string
 	RotateUserAgent                  bool
@@ -101,6 +102,7 @@ const (
 	ProviderEastmoney ProviderName = core.ProviderEastmoney
 	ProviderSina      ProviderName = core.ProviderSina
 	ProviderLinkdiary ProviderName = core.ProviderLinkdiary
+	ProviderTHS       ProviderName = core.ProviderTHS
 	ProviderUnknown   ProviderName = core.ProviderUnknown
 )
 
@@ -204,6 +206,7 @@ func defaultConfig() Config {
 		SinaIndexOptionKlineURL:          constants.SinaOptionDaylineURL,
 		SinaCommodityOptionSpotURL:       constants.SinaOptionAPIURL,
 		SinaCommodityOptionKlineURL:      constants.SinaOptionDaylineURL,
+		THSLimitUpPoolURL:                constants.THSLimitUpPoolURL,
 		Timeout:                          30 * time.Second,
 		UserAgent:                        "ceheng-stock-go/0.1",
 		Retry: RetryOptions{
@@ -214,6 +217,16 @@ func defaultConfig() Config {
 			RetryableStatusCodes: constants.DefaultRetryableStatusCodes(),
 			RetryOnNetworkError:  boolPtr(true),
 			RetryOnTimeout:       boolPtr(true),
+		},
+		ProviderPolicies: map[ProviderName]ProviderPolicy{
+			ProviderTHS: {
+				UserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+				Headers: map[string]string{
+					"Accept":  "application/json, text/plain, */*",
+					"Referer": "https://data.10jqka.com.cn/market/ztStock/",
+					"Cookie":  "v=A0aSl97zW6psJw9OiWEn2CdlkTfNp4vvXOm-xTBvMghEJ-jpmDfacSx7DtgD",
+				},
+			},
 		},
 	}
 }

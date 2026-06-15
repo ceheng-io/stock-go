@@ -113,6 +113,13 @@ const (
 	SINA_SSE_OPTION_5DAY_URL   = SinaSSEOption5DayURL
 )
 
+// 同花顺数据 API。
+const (
+	THSLimitUpPoolURL = "https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool"
+
+	THS_LIMIT_UP_POOL_URL = THSLimitUpPoolURL
+)
+
 // 默认请求和重试配置，单位与 TS SDK 保持一致。
 const (
 	DefaultTimeoutMS         = 30000

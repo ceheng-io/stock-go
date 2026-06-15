@@ -115,7 +115,7 @@ func New(options ...Option) *Client {
 		Data: services.NewDataService(coreClient, services.DataServiceOptions{
 			DatacenterURL: config.EastmoneyDatacenterURL,
 		}),
-		MarketEvent: services.NewMarketEventService(coreClient, config.EastmoneyTopicURL),
+		MarketEvent: services.NewMarketEventService(coreClient, config.EastmoneyTopicURL, config.THSLimitUpPoolURL),
 		Fund: services.NewFundService(coreClient, services.FundURLs{
 			GZ:        config.EastmoneyFundGZURL,
 			Pingzhong: config.EastmoneyFundPingzhongURL,

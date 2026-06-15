@@ -44,6 +44,7 @@ func TestCoreURLConstantsMatchTypeScriptSDK(t *testing.T) {
 		"SinaSSEOption5DayURL":   SinaSSEOption5DayURL,
 		"EMOptionCFFEXURL":       EMOptionCFFEXURL,
 		"EMOptionLHBURL":         EMOptionLHBURL,
+		"THSLimitUpPoolURL":      THSLimitUpPoolURL,
 	}
 
 	want := map[string]string{
@@ -87,6 +88,7 @@ func TestCoreURLConstantsMatchTypeScriptSDK(t *testing.T) {
 		"SinaSSEOption5DayURL":   "https://stock.finance.sina.com.cn/futures/api/openapi.php/StockOptionDaylineService.getFiveDayLine",
 		"EMOptionCFFEXURL":       "https://futsseapi.eastmoney.com/list/option/221",
 		"EMOptionLHBURL":         "https://datacenter-web.eastmoney.com/api/data/get",
+		"THSLimitUpPoolURL":      "https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool",
 	}
 
 	for name, got := range tests {
