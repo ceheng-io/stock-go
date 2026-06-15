@@ -8,7 +8,7 @@
       </a-space>
     </div>
     <a-card size="small">
-      <a-table :columns="columns" :data-source="filteredRows" row-key="code" size="small" :pagination="{ pageSize: 30 }" @row="rowClick">
+      <a-table :columns="columns" :data-source="filteredRows" row-key="code" size="small" :pagination="{ pageSize: 30 }" :custom-row="rowClick">
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'changePercent'">
             <span :class="getChangeColorClass(record.changePercent)">

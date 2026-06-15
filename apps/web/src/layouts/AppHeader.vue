@@ -7,9 +7,11 @@
       v-model:value="keyword"
       class="search"
       :options="options"
+      allow-clear
       placeholder="搜索股票、板块..."
       @focus="showHistory"
       @search="handleSearch"
+      @select="handleAutoCompleteSelect"
     >
       <template #option="slotProps">
         <div
@@ -41,17 +43,37 @@
         </div>
       </template>
     </a-auto-complete>
-    <a-tag color="blue">Go SDK API</a-tag>
+    <a-space class="header-actions" :size="6">
+      <a-button class="theme-toggle" type="text" :title="themeMode === 'dark' ? '切换到浅色主题' : '切换到深色主题'" @click="toggleTheme">
+        <BulbOutlined v-if="themeMode === 'dark'" />
+        <EyeInvisibleOutlined v-else />
+      </a-button>
+      <a href="https://stock-sdk.linkdiary.cn/" target="_blank" rel="noopener noreferrer" title="Stock SDK">
+        <DatabaseOutlined />
+      </a>
+      <a href="https://github.com/chengzuopeng/stock-dashboard" target="_blank" rel="noopener noreferrer" title="GitHub">
+        <GithubOutlined />
+      </a>
+    </a-space>
   </a-layout-header>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { CheckOutlined, MenuOutlined, StarOutlined } from '@ant-design/icons-vue'
+import {
+  CheckOutlined,
+  BulbOutlined,
+  DatabaseOutlined,
+  EyeInvisibleOutlined,
+  GithubOutlined,
+  MenuOutlined,
+  StarOutlined,
+} from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import { search } from '@/services/api'
 import { addSearchHistory, addToWatchlist, clearSearchHistory, getSearchHistory, isInWatchlist } from '@/services/storage'
+import { getThemeMode, toggleThemeMode, type ThemeMode } from '@/services/theme'
 import type { SearchHistoryItem, SearchResult } from '@/types'
 import { normalizeStockCode } from '@/utils/format'
 
@@ -59,6 +81,7 @@ defineEmits<{ 'toggle-menu': [] }>()
 
 const router = useRouter()
 const keyword = ref('')
+const themeMode = ref<ThemeMode>(getThemeMode())
 type HeaderOption = {
   value: string
   label: string
@@ -68,6 +91,7 @@ type HeaderOption = {
   entityType?: string
   kind?: 'result' | 'history' | 'history-title'
 }
+type HeaderOptionSlot = HeaderOption | { option?: HeaderOption }
 
 const options = ref<HeaderOption[]>([])
 const addedCodes = ref<Set<string>>(new Set())
@@ -109,9 +133,14 @@ function toHistoryOption(item: SearchHistoryItem): HeaderOption | null {
   }
 }
 
-function slotOption(slotProps: HeaderOption | { option?: HeaderOption }) {
+function slotOption(slotProps: HeaderOptionSlot) {
   if ('option' in slotProps && slotProps.option) return slotProps.option
   return slotProps as HeaderOption
+}
+
+function selectedOption(value: string, option?: HeaderOptionSlot) {
+  if (option) return slotOption(option)
+  return options.value.find((item) => item.value === value)
 }
 
 function historyOptions() {
@@ -157,6 +186,11 @@ function handleSelectOption(option: HeaderOption) {
   }
 }
 
+function handleAutoCompleteSelect(value: string, option?: HeaderOptionSlot) {
+  const optionFromSelect = selectedOption(value, option)
+  if (optionFromSelect) handleSelectOption(optionFromSelect)
+}
+
 function isStockInWatchlist(code: string) {
   return addedCodes.value.has(normalizeStockCode(code)) || isInWatchlist(code)
 }
@@ -173,6 +207,10 @@ function clearHistory() {
   clearSearchHistory()
   options.value = []
 }
+
+function toggleTheme() {
+  themeMode.value = toggleThemeMode()
+}
 </script>
 
 <style scoped>
@@ -182,7 +220,7 @@ function clearHistory() {
   gap: 12px;
   height: 64px;
   padding: 0 18px;
-  background: var(--color-surface);
+  background: var(--color-header-bg);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -219,7 +257,7 @@ function clearHistory() {
 .clear-history {
   border: 0;
   padding: 0;
-  color: #1677ff;
+  color: var(--color-link);
   background: transparent;
   cursor: pointer;
 }
@@ -227,6 +265,26 @@ function clearHistory() {
 .quick-add:disabled {
   color: var(--color-muted);
   cursor: not-allowed;
+}
+
+.header-actions {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.header-actions a {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  border-radius: 6px;
+}
+
+.header-actions a:hover {
+  color: var(--color-link);
+  background: var(--color-hover);
 }
 
 .history-title {

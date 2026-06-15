@@ -14,7 +14,7 @@
           <a-form layout="vertical">
             <a-form-item label="列表 / 自选">
               <a-select v-model:value="settings.refreshInterval.list">
-                <a-select-option :value="0">手动刷新</a-select-option>
+                <a-select-option :value="0">默认</a-select-option>
                 <a-select-option :value="5000">5 秒</a-select-option>
                 <a-select-option :value="10000">10 秒</a-select-option>
                 <a-select-option :value="15000">15 秒</a-select-option>
@@ -136,11 +136,21 @@
       <a-col :xs="24">
         <a-card title="数据源" size="small">
           <a-descriptions :column="{ xs: 1, md: 2 }" size="small">
+            <a-descriptions-item label="应用">策衡 A 股看板</a-descriptions-item>
             <a-descriptions-item label="前端">Vue 3 + Ant Design Vue + ECharts</a-descriptions-item>
             <a-descriptions-item label="后端">apps/server 调用当前 Go SDK</a-descriptions-item>
             <a-descriptions-item label="API 前缀">/api</a-descriptions-item>
             <a-descriptions-item label="本地数据">自选、预警和显示设置保存在浏览器 localStorage</a-descriptions-item>
           </a-descriptions>
+          <a-divider />
+          <a-typography-text strong>数据说明：</a-typography-text>
+          <ul class="note-list">
+            <li>成交量单位：手（1 手 = 100 股）</li>
+            <li>成交额单位：万元</li>
+            <li>资金流、北向、龙虎榜等数据默认使用元级展示</li>
+            <li>市值单位：亿元</li>
+            <li>详情页以 A 股为主；港股、美股、基金搜索结果不跳转详情页</li>
+          </ul>
         </a-card>
       </a-col>
     </a-row>
@@ -188,7 +198,7 @@ function save() {
 
 function reset() {
   const cleared: AppSettings = {
-    refreshInterval: { list: 15000, detail: 5000, heatmap: 10000 },
+    refreshInterval: { list: 0, detail: 5000, heatmap: 10000 },
     colorMode: 'red-rise',
     heatmapConfig: {
       dimension: 'industry',
@@ -218,5 +228,12 @@ function reset() {
 <style scoped>
 .settings-page :deep(.ant-input-number) {
   width: 92px;
+}
+
+.note-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--color-muted);
+  line-height: 1.8;
 }
 </style>

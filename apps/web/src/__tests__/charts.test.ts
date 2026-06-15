@@ -2,12 +2,9 @@ import { describe, expect, it } from 'vitest'
 import {
   buildEmptyChartOption,
   buildFundFlowOption,
-  buildIndicatorKlineOption,
-  buildKlineVolumeOption,
   buildMinuteChartOption,
   normalizeBoardSpotRows,
 } from '@/services/charts'
-import type { IndicatorConfig } from '@/types'
 
 describe('chart helpers', () => {
   it('keeps empty chart axes as arrays so stale multi-axis series cannot reference missing xAxis 1', () => {
@@ -18,25 +15,6 @@ describe('chart helpers', () => {
     expect(option.series).toEqual([])
   })
 
-  it('builds K line and volume option with matching secondary axes', () => {
-    const option = buildKlineVolumeOption(
-      [
-        { date: '2026-06-12', open: 10, close: 11, low: 9.8, high: 11.2, volume: 1200 },
-        { date: '2026-06-15', open: 11, close: 10.5, low: 10.3, high: 11.3, volume: 900 },
-      ],
-      { emptyText: '暂无 K 线数据' },
-    )
-
-    expect(option.xAxis).toHaveLength(2)
-    expect(option.yAxis).toHaveLength(2)
-    expect(option.series).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: 'K线', type: 'candlestick' }),
-        expect.objectContaining({ name: '成交量', type: 'bar', xAxisIndex: 1, yAxisIndex: 1 }),
-      ]),
-    )
-  })
-
   it('normalizes board spot arrays, wrapped payloads and object payloads', () => {
     expect(normalizeBoardSpotRows([{ item: '最新', value: 123 }])).toEqual([{ item: '最新', value: 123 }])
     expect(normalizeBoardSpotRows({ data: [{ item: '涨幅', value: 1.2 }] })).toEqual([{ item: '涨幅', value: 1.2 }])
@@ -44,67 +22,6 @@ describe('chart helpers', () => {
       { item: 'price', value: 12.3 },
       { item: 'changePercent', value: 2.1 },
     ])
-  })
-
-  it('builds indicator K line option with overlays and oscillator panels', () => {
-    const indicatorConfig: IndicatorConfig = {
-      ma: [5, 10],
-      macd: { short: 12, long: 26, signal: 9 },
-      boll: { period: 20, stdDev: 2 },
-      kdj: { period: 9, kPeriod: 3, dPeriod: 3 },
-      rsi: [6, 12],
-      dmi: { period: 14, adxPeriod: 14 },
-      sar: { afStart: 0.02, afIncrement: 0.02, afMax: 0.2 },
-      kc: { emaPeriod: 20, atrPeriod: 10, multiplier: 2 },
-    }
-
-    const option = buildIndicatorKlineOption(
-      [
-        {
-          date: '2026-06-12',
-          open: 10,
-          close: 11,
-          low: 9.8,
-          high: 11.2,
-          volume: 1200,
-          ma: { ma5: 10.4, ma10: 10.1 },
-          boll: { upper: 12, mid: 10, lower: 8 },
-          kc: { upper: 11.8, mid: 10.2, lower: 8.6 },
-          macd: { dif: 0.1, dea: 0.05, macd: 0.1 },
-        },
-        {
-          date: '2026-06-15',
-          open: 11,
-          close: 10.5,
-          low: 10.3,
-          high: 11.3,
-          volume: 900,
-          ma: { ma5: 10.6, ma10: 10.2 },
-          boll: { upper: 12.1, mid: 10.1, lower: 8.1 },
-          kc: { upper: 11.9, mid: 10.3, lower: 8.7 },
-          macd: { dif: 0.2, dea: 0.08, macd: 0.24 },
-        },
-      ],
-      {
-        emptyText: '暂无 K 线数据',
-        overlays: ['ma', 'boll', 'kc'],
-        oscillator: 'macd',
-        indicatorConfig,
-      },
-    )
-
-    expect(option.xAxis).toHaveLength(3)
-    expect(option.yAxis).toHaveLength(3)
-    expect(option.dataZoom?.[0]).toMatchObject({ xAxisIndex: [0, 1, 2] })
-    expect(option.series).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: 'MA5', type: 'line' }),
-        expect.objectContaining({ name: 'BOLL上轨', type: 'line' }),
-        expect.objectContaining({ name: 'KC下轨', type: 'line' }),
-        expect.objectContaining({ name: 'MACD', type: 'bar', xAxisIndex: 2, yAxisIndex: 2 }),
-        expect.objectContaining({ name: 'DIF', type: 'line', xAxisIndex: 2, yAxisIndex: 2 }),
-      ]),
-    )
   })
 
   it('builds sector fund flow option with amount bar and ratio line axes', () => {

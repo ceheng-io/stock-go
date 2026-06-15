@@ -104,7 +104,7 @@
           row-key="routeCode"
           size="small"
           :pagination="{ pageSize: 20 }"
-          @row="rowClick"
+          :custom-row="rowClick"
         >
           <template #bodyCell="{ column, record }">
             <template v-if="column.key === 'matchedSignals'">
@@ -184,7 +184,7 @@ const poolSourceOptions = [
   { label: '板块', value: 'board' },
   { label: '榜单', value: 'ranking' },
   { label: '涨停池', value: 'zt_pool' },
-  { label: '异动池', value: 'stock_changes' },
+  { label: '盘口异动池', value: 'stock_changes' },
 ]
 const boardTypeOptions = [{ label: '行业', value: 'industry' }, { label: '概念', value: 'concept' }]
 const rankingOptions = [{ label: '成交额', value: 'amount' }, { label: '涨幅', value: 'changePercent' }, { label: '换手率', value: 'turnoverRate' }]

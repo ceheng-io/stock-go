@@ -261,7 +261,7 @@ import {
   summarizeMarketBreadth,
   type DashboardRankingTab,
 } from '@/services/dashboard'
-import { getAllWatchlistCodes, getSettings } from '@/services/storage'
+import { getAllWatchlistCodes, getRefreshInterval } from '@/services/storage'
 import type { Board, FullQuote } from '@/types'
 import {
   formatAmount,
@@ -324,7 +324,7 @@ const northboundSummary = ref<NorthboundSummaryRow[]>([])
 const industryFundFlowRanks = ref<SectorFundFlowRankRow[]>([])
 const conceptFundFlowRanks = ref<SectorFundFlowRankRow[]>([])
 const fundFlowRanks = ref<FundFlowRankRow[]>([])
-const listRefreshInterval = getSettings().refreshInterval.list
+const listRefreshInterval = getRefreshInterval('list')
 
 const rankingOptions = [
   { label: '涨幅榜', value: 'rise' },
@@ -524,10 +524,11 @@ usePolling(load, { interval: listRefreshInterval, enabled: computed(() => !loadi
 
 .clickable-row {
   cursor: pointer;
+  background: transparent;
 }
 
 .clickable-row:hover {
-  background: #f8fafc;
+  background: var(--color-hover);
 }
 
 .quote-side,

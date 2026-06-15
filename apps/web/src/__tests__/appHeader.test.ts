@@ -19,6 +19,7 @@ const autoCompleteStub = defineComponent({
   props: {
     value: { type: String, default: '' },
     options: { type: Array, default: () => [] },
+    allowClear: { type: Boolean, default: false },
   },
   emits: ['search', 'select', 'focus', 'update:value'],
   template: `
@@ -40,6 +41,27 @@ const autoCompleteStub = defineComponent({
     </div>
   `,
 })
+
+function mountHeader() {
+  return mount(AppHeader, {
+    global: {
+      stubs: {
+        AAutoComplete: autoCompleteStub,
+        AButton: true,
+        ALayoutHeader: { template: '<header><slot /></header>' },
+        ASpace: { template: '<div><slot /></div>' },
+        ATag: true,
+        BulbOutlined: true,
+        CheckOutlined: true,
+        DatabaseOutlined: true,
+        EyeInvisibleOutlined: true,
+        GithubOutlined: true,
+        MenuOutlined: true,
+        StarOutlined: true,
+      },
+    },
+  })
+}
 
 function createStorage() {
   const store = new Map<string, string>()
@@ -64,20 +86,7 @@ describe('AppHeader', () => {
       { code: '600519', name: '贵州茅台', market: 'sh', type: '股票', entityType: 'stock', isSupported: true },
     ])
 
-    const wrapper = mount(AppHeader, {
-      global: {
-        stubs: {
-          AAutoComplete: autoCompleteStub,
-          AButton: true,
-          ALayoutHeader: { template: '<header><slot /></header>' },
-          ATag: true,
-          MenuOutlined: true,
-          CheckOutlined: true,
-          StarOutlined: true,
-          DeleteOutlined: true,
-        },
-      },
-    })
+    const wrapper = mountHeader()
 
     await wrapper.get('[data-testid="header-search"]').setValue('茅台')
     await vi.advanceTimersByTimeAsync(250)
@@ -89,25 +98,45 @@ describe('AppHeader', () => {
     expect(localStorage.getItem('search.recent')).toContain('贵州茅台')
   })
 
+  it('selects a highlighted search result from the autocomplete select event', async () => {
+    searchMock.mockResolvedValue([
+      { code: '600519', name: '贵州茅台', market: 'sh', type: '股票', entityType: 'stock', isSupported: true },
+    ])
+
+    const wrapper = mountHeader()
+
+    await wrapper.get('[data-testid="header-search"]').setValue('茅台')
+    await vi.advanceTimersByTimeAsync(250)
+    await nextTick()
+
+    const autoComplete = wrapper.getComponent(autoCompleteStub)
+    const [option] = autoComplete.props('options') as Array<{
+      value: string
+      label: string
+      route: string
+      market: string
+      type: string
+    }>
+
+    autoComplete.vm.$emit('select', option.value, option)
+    await nextTick()
+
+    expect(push).toHaveBeenCalledWith('/s/sh600519')
+    expect(localStorage.getItem('search.recent')).toContain('贵州茅台')
+  })
+
+  it('enables clearing the search input from the autocomplete control', () => {
+    const wrapper = mountHeader()
+
+    expect(wrapper.getComponent(autoCompleteStub).props('allowClear')).toBe(true)
+  })
+
   it('adds stock search result to watchlist without navigating', async () => {
     searchMock.mockResolvedValue([
       { code: '600519', name: '贵州茅台', market: 'sh', type: '股票', entityType: 'stock', isSupported: true },
     ])
 
-    const wrapper = mount(AppHeader, {
-      global: {
-        stubs: {
-          AAutoComplete: autoCompleteStub,
-          AButton: true,
-          ALayoutHeader: { template: '<header><slot /></header>' },
-          ATag: true,
-          MenuOutlined: true,
-          CheckOutlined: true,
-          StarOutlined: true,
-          DeleteOutlined: true,
-        },
-      },
-    })
+    const wrapper = mountHeader()
 
     await wrapper.get('[data-testid="header-search"]').setValue('茅台')
     await vi.advanceTimersByTimeAsync(250)
@@ -124,20 +153,7 @@ describe('AppHeader', () => {
       { code: 'sh600519', name: '贵州茅台', market: 'sh', type: '股票', timestamp: 1 },
     ]))
 
-    const wrapper = mount(AppHeader, {
-      global: {
-        stubs: {
-          AAutoComplete: autoCompleteStub,
-          AButton: true,
-          ALayoutHeader: { template: '<header><slot /></header>' },
-          ATag: true,
-          MenuOutlined: true,
-          CheckOutlined: true,
-          StarOutlined: true,
-          DeleteOutlined: true,
-        },
-      },
-    })
+    const wrapper = mountHeader()
 
     await wrapper.get('[data-testid="header-search"]').trigger('focus')
 
@@ -147,5 +163,17 @@ describe('AppHeader', () => {
     await wrapper.get('.clear-history').trigger('click')
 
     expect(localStorage.getItem('search.recent')).toBeNull()
+  })
+
+  it('renders SDK GitHub links and toggles theme mode', async () => {
+    const wrapper = mountHeader()
+
+    expect(wrapper.get('a[href="https://stock-sdk.linkdiary.cn/"]').attributes('target')).toBe('_blank')
+    expect(wrapper.get('a[href="https://github.com/chengzuopeng/stock-dashboard"]').attributes('target')).toBe('_blank')
+
+    await wrapper.get('.theme-toggle').trigger('click')
+
+    expect(document.documentElement.dataset.theme).toBe('light')
+    expect(localStorage.getItem('app.theme')).toBe('light')
   })
 })

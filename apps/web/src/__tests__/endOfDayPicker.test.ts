@@ -1,4 +1,7 @@
+import { mount } from '@vue/test-utils'
+import { defineComponent, nextTick } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import EndOfDayPicker from '@/pages/EndOfDayPicker/EndOfDayPicker.vue'
 import {
   DEFAULT_END_OF_DAY_FILTERS,
   addEndOfDayRecentUsage,
@@ -13,6 +16,12 @@ import {
   toggleSelectedCode,
 } from '@/services/endOfDayPicker'
 import type { EndOfDayStock } from '@/services/analysis'
+
+const push = vi.fn()
+
+vi.mock('vue-router', () => ({
+  useRouter: () => ({ push }),
+}))
 
 function stock(partial: Partial<EndOfDayStock>): EndOfDayStock {
   return {
@@ -100,5 +109,56 @@ describe('end of day picker helpers', () => {
         (code) => code === 'sh600000',
       ),
     ).toEqual(['sz000001'])
+  })
+
+  it('passes result row navigation through Ant Design table customRow', async () => {
+    const tableStub = defineComponent({
+      name: 'ATable',
+      props: {
+        customRow: { type: Function, default: undefined },
+        dataSource: { type: Array, default: () => [] },
+      },
+      template: '<div data-testid="eod-table" />',
+    })
+
+    const wrapper = mount(EndOfDayPicker, {
+      global: {
+        stubs: {
+          AButton: true,
+          ACard: { template: '<section><slot /><slot name="extra" /></section>' },
+          ACheckbox: true,
+          ACol: { template: '<div><slot /></div>' },
+          ADescriptions: true,
+          ADescriptionsItem: true,
+          ADivider: true,
+          AEmpty: true,
+          AForm: { template: '<form><slot /></form>' },
+          AFormItem: { template: '<div><slot /></div>' },
+          AInputNumber: true,
+          AInputSearch: true,
+          AList: true,
+          AListItem: true,
+          AListItemMeta: true,
+          APopover: true,
+          AProgress: true,
+          ARow: { template: '<div><slot /></div>' },
+          ASegmented: true,
+          ASelect: true,
+          ASpace: { template: '<div><slot /></div>' },
+          AStatistic: true,
+          ATable: tableStub,
+        },
+      },
+    })
+
+    const vm = wrapper.vm as unknown as { stocks: EndOfDayStock[] }
+    vm.stocks = [stock({ routeCode: 'sh600519', name: '贵州茅台' })]
+    await nextTick()
+
+    const customRow = wrapper.getComponent(tableStub).props('customRow')
+    expect(customRow).toEqual(expect.any(Function))
+
+    customRow?.({ routeCode: 'sh600519' }).onClick()
+    expect(push).toHaveBeenCalledWith('/s/sh600519')
   })
 })

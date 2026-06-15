@@ -53,7 +53,7 @@ import type { ECElementEvent } from 'echarts/core'
 import type { ECBasicOption } from 'echarts/types/dist/shared'
 import { usePolling } from '@/composables/usePolling'
 import { getAllQuotesByCodes, getConceptList, getIndustryList } from '@/services/api'
-import { getAllWatchlistCodes, getHeatmapConfig, getSettings, updateSettings } from '@/services/storage'
+import { getAllWatchlistCodes, getHeatmapConfig, getRefreshInterval, updateSettings } from '@/services/storage'
 import type { Board, FullQuote, HeatmapConfig } from '@/types'
 import { formatAmount, formatMarketCap, formatPercent, formatVolume } from '@/utils/format'
 
@@ -83,7 +83,7 @@ const loading = ref(false)
 const error = ref('')
 const boards = ref<Board[]>([])
 const stockQuotes = ref<FullQuote[]>([])
-const heatmapRefreshInterval = getSettings().refreshInterval.heatmap
+const heatmapRefreshInterval = getRefreshInterval('heatmap')
 const dimensionOptions = [
   { label: '行业', value: 'industry' },
   { label: '概念', value: 'concept' },

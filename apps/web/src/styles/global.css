@@ -10,6 +10,10 @@ body {
   background: var(--color-bg);
 }
 
+a {
+  color: var(--color-link);
+}
+
 #app {
   min-height: 100vh;
 }
@@ -41,6 +45,64 @@ body {
 
 .page-title {
   margin: 0;
+  color: var(--color-text-strong);
   font-size: 22px;
   font-weight: 650;
+}
+
+.ant-layout {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.ant-card,
+.ant-table-wrapper,
+.ant-list,
+.ant-descriptions,
+.ant-segmented,
+.ant-dropdown .ant-dropdown-menu,
+.ant-select-dropdown,
+.ant-picker-dropdown .ant-picker-panel-container,
+.ant-modal-content,
+.ant-drawer-content {
+  color: var(--color-text);
+}
+
+.ant-card {
+  background: var(--color-surface);
+  border-color: var(--color-split);
+}
+
+.ant-card-head,
+.ant-table-thead > tr > th {
+  color: var(--color-text-strong);
+  background: var(--color-surface-elevated);
+  border-color: var(--color-split);
+}
+
+.ant-table,
+.ant-table-container,
+.ant-table-cell,
+.ant-list-item,
+.ant-descriptions-item-label,
+.ant-descriptions-item-content {
+  color: var(--color-text);
+  border-color: var(--color-split);
+}
+
+.ant-table-tbody > tr.ant-table-row:hover > td,
+.ant-table-tbody > tr > td.ant-table-cell-row-hover {
+  background: var(--color-hover);
+}
+
+.ant-typography,
+.ant-statistic-content,
+.ant-form-item-label > label {
+  color: var(--color-text);
+}
+
+.ant-statistic-title,
+.ant-empty-description,
+.ant-table-placeholder {
+  color: var(--color-muted);
 }

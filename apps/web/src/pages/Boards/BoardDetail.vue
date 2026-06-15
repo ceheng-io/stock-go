@@ -48,7 +48,7 @@
       <a-tabs v-model:active-key="activeTab">
         <a-tab-pane key="trend" tab="趋势">
           <a-segmented v-model:value="period" :options="periodOptions" class="toolbar-control" />
-          <v-chart class="chart" :option="klineOption" autoresize :not-merge="true" />
+          <KLineChart :rows="klines" empty-text="暂无板块 K 线" />
         </a-tab-pane>
         <a-tab-pane key="minute" tab="分时">
           <v-chart class="chart" :option="minuteOption" autoresize :not-merge="true" />
@@ -65,7 +65,7 @@
             size="small"
             :loading="loading"
             :pagination="{ pageSize: 30 }"
-            @row="rowClick"
+            :custom-row="rowClick"
           />
         </a-tab-pane>
       </a-tabs>
@@ -81,8 +81,9 @@ import { h } from 'vue'
 import { use } from 'echarts/core'
 import { message } from 'ant-design-vue'
 import { CanvasRenderer } from 'echarts/renderers'
-import { CandlestickChart, LineChart, BarChart } from 'echarts/charts'
+import { LineChart, BarChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, DataZoomComponent, LegendComponent, TitleComponent } from 'echarts/components'
+import KLineChart from '@/components/charts/KLineChart.vue'
 import {
   getBoardKline,
   getBoardMinuteKline,
@@ -93,12 +94,12 @@ import {
   getIndustryList,
   getIndustryConstituents,
 } from '@/services/api'
-import { buildEmptyChartOption, buildFundFlowOption, buildKlineVolumeOption, normalizeBoardSpotRows, type BoardSpotRow, type FundFlowRow } from '@/services/charts'
+import { buildEmptyChartOption, buildFundFlowOption, normalizeBoardSpotRows, type BoardSpotRow, type FundFlowRow } from '@/services/charts'
 import { addToWatchlist, isInWatchlist } from '@/services/storage'
 import { formatPercent, formatPrice, formatTurnover, formatVolume, formatYuanAmount } from '@/utils/format'
 import type { Board } from '@/types'
 
-use([CanvasRenderer, CandlestickChart, LineChart, BarChart, GridComponent, TooltipComponent, DataZoomComponent, LegendComponent, TitleComponent])
+use([CanvasRenderer, LineChart, BarChart, GridComponent, TooltipComponent, DataZoomComponent, LegendComponent, TitleComponent])
 
 type BoardType = 'industry' | 'concept'
 type Spot = BoardSpotRow
@@ -169,10 +170,6 @@ const columns = [
     ),
   },
 ]
-
-const klineOption = computed(() => {
-  return buildKlineVolumeOption(klines.value, { emptyText: '暂无板块 K 线' })
-})
 
 const minuteOption = computed(() => {
   const rows = minute.value?.timeline?.length ? minute.value.timeline : minute.value?.klines || []

@@ -1,17 +1,13 @@
-# Local planning artifacts
-docs/superpowers/
-
 # Go build/test artifacts
-bin/
-_output
+dist/
+**/dist/
 *.test
 *.out
 coverage.*
 
-# Go workspace/vendor scratch
-go.work
-go.work.sum
-vendor/
+# Frontend dependencies/build cache
+node_modules/
+**/node_modules/
 
 # OS/editor files
 .DS_Store

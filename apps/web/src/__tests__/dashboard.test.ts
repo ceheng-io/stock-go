@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import dashboardSource from '@/pages/Dashboard/Dashboard.vue?raw'
 import {
   buildDashboardFailureMessage,
   getLatestMarketFundFlow,
@@ -123,5 +124,10 @@ describe('dashboard helpers', () => {
     expect(buildDashboardFailureMessage(['板块行情', '全市场行情'])).toBe(
       '板块行情、全市场行情加载失败，其他区域已保留可用数据',
     )
+  })
+
+  it('uses themed hover background for dashboard list rows', () => {
+    expect(dashboardSource).toContain('background: var(--color-hover);')
+    expect(dashboardSource).not.toContain('background: #f8fafc;')
   })
 })

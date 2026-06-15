@@ -7,9 +7,12 @@ import {
   createWatchlistGroup,
   deleteWatchlistGroup,
   getAllWatchlistCodes,
+  getRefreshInterval,
   getSearchHistory,
   getSettings,
+  getHeatmapConfig,
   getWatchlistGroups,
+  getIndicatorConfig,
   renameWatchlistGroup,
   reorderWatchlist,
   updateSettings,
@@ -66,7 +69,10 @@ describe('storage service', () => {
   it('batch adds removes and reorders watchlist codes in one group', () => {
     const group = createWatchlistGroup('策略')
 
-    batchAddToWatchlist(['600519', '000001', 'sh600519'], group.id)
+    const addedCount = batchAddToWatchlist(['600519', '000001', 'sh600519'], group.id)
+
+    expect(addedCount).toBe(2)
+    expect(batchAddToWatchlist(['600519', 'sh600519'], group.id)).toBe(0)
     expect(getWatchlistGroups().find((item) => item.id === group.id)?.codes).toEqual(['sh600519', 'sz000001'])
 
     reorderWatchlist(group.id, ['sz000001', 'sh600519', 'sz300750'])
@@ -94,6 +100,41 @@ describe('storage service', () => {
     expect(settings.indicatorConfig.ma).toEqual([5, 10, 20, 60])
     expect(settings.indicatorConfig.sar).toEqual({ afStart: 0.02, afIncrement: 0.02, afMax: 0.2 })
     expect(settings.indicatorConfig.kc).toEqual({ emaPeriod: 20, atrPeriod: 10, multiplier: 2 })
+  })
+
+  it('treats zero refresh interval as the old dashboard default interval', () => {
+    updateSettings({ refreshInterval: { list: 0 } })
+
+    expect(getSettings().refreshInterval.list).toBe(0)
+    expect(getRefreshInterval('list')).toBe(15000)
+    expect(getRefreshInterval('detail')).toBe(5000)
+    expect(getRefreshInterval('heatmap')).toBe(10000)
+  })
+
+  it('loads legacy heatmap and indicator config keys from the old dashboard', () => {
+    localStorage.setItem('ui.heatmapConfig', JSON.stringify({
+      dimension: 'watchlist',
+      colorMode: 'green-rise',
+      topK: 80,
+    }))
+    localStorage.setItem('ui.indicatorConfig', JSON.stringify({
+      macd: { short: 8 },
+      sar: { afMax: 0.3 },
+    }))
+
+    const settings = getSettings()
+
+    expect(settings.heatmapConfig).toMatchObject({
+      dimension: 'watchlist',
+      colorField: 'changePercent',
+      sizeField: 'totalMarketCap',
+      colorMode: 'green-rise',
+      topK: 80,
+    })
+    expect(settings.indicatorConfig.macd).toEqual({ short: 8, long: 26, signal: 9 })
+    expect(settings.indicatorConfig.sar).toEqual({ afStart: 0.02, afIncrement: 0.02, afMax: 0.3 })
+    expect(getHeatmapConfig().dimension).toBe('watchlist')
+    expect(getIndicatorConfig().macd.short).toBe(8)
   })
 
   it('updates SAR and KC indicator settings without resetting other indicator settings', () => {

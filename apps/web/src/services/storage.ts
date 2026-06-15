@@ -6,11 +6,13 @@ const STORAGE_KEYS = {
   ALERTS: 'watchlist.alerts',
   SETTINGS: 'app.settings',
   TABLE_COLUMNS: 'ui.tableColumns',
+  HEATMAP_CONFIG: 'ui.heatmapConfig',
+  INDICATOR_CONFIG: 'ui.indicatorConfig',
   SEARCH_HISTORY: 'search.recent',
 } as const
 
 const DEFAULT_SETTINGS: AppSettings = {
-  refreshInterval: { list: 15000, detail: 5000, heatmap: 10000 },
+  refreshInterval: { list: 0, detail: 5000, heatmap: 10000 },
   colorMode: 'red-rise',
   heatmapConfig: {
     dimension: 'industry',
@@ -29,6 +31,12 @@ const DEFAULT_SETTINGS: AppSettings = {
     sar: { afStart: 0.02, afIncrement: 0.02, afMax: 0.2 },
     kc: { emaPeriod: 20, atrPeriod: 10, multiplier: 2 },
   },
+}
+
+const DEFAULT_REFRESH_INTERVALS: AppSettings['refreshInterval'] = {
+  list: 15000,
+  detail: 5000,
+  heatmap: 10000,
 }
 
 const DEFAULT_WATCHLIST_GROUPS: WatchlistGroup[] = [
@@ -134,14 +142,19 @@ export function batchAddToWatchlist(codes: string[], groupId = 'default') {
   const groups = getWatchlistGroups()
   const group = groups.find((item) => item.id === groupId) || groups[0]
   const seen = new Set(group.codes.map(normalizeStockCode))
+  let addedCount = 0
   codes.map(normalizeStockCode).forEach((code) => {
     if (code && !seen.has(code)) {
       seen.add(code)
       group.codes.push(code)
+      addedCount += 1
     }
   })
-  group.updatedAt = Date.now()
-  saveWatchlistGroups(groups)
+  if (addedCount > 0) {
+    group.updatedAt = Date.now()
+    saveWatchlistGroups(groups)
+  }
+  return addedCount
 }
 
 export function batchRemoveFromWatchlist(codes: string[], groupId?: string) {
@@ -209,17 +222,66 @@ export function deleteAlertRule(id: string) {
 
 export function getSettings(): AppSettings {
   const parsed = safeJsonParse<Partial<AppSettings>>(localStorage.getItem(STORAGE_KEYS.SETTINGS), {})
+  const legacyHeatmapConfig = safeJsonParse<Partial<HeatmapConfig>>(
+    localStorage.getItem(STORAGE_KEYS.HEATMAP_CONFIG),
+    {},
+  )
+  const legacyIndicatorConfig = safeJsonParse<Partial<IndicatorConfig>>(
+    localStorage.getItem(STORAGE_KEYS.INDICATOR_CONFIG),
+    {},
+  )
   return {
     ...DEFAULT_SETTINGS,
     ...parsed,
     refreshInterval: { ...DEFAULT_SETTINGS.refreshInterval, ...parsed.refreshInterval },
-    heatmapConfig: { ...DEFAULT_SETTINGS.heatmapConfig, ...parsed.heatmapConfig },
-    indicatorConfig: { ...DEFAULT_SETTINGS.indicatorConfig, ...parsed.indicatorConfig },
+    heatmapConfig: { ...DEFAULT_SETTINGS.heatmapConfig, ...legacyHeatmapConfig, ...parsed.heatmapConfig },
+    indicatorConfig: {
+      ...DEFAULT_SETTINGS.indicatorConfig,
+      ...legacyIndicatorConfig,
+      ...parsed.indicatorConfig,
+      macd: {
+        ...DEFAULT_SETTINGS.indicatorConfig.macd,
+        ...legacyIndicatorConfig.macd,
+        ...parsed.indicatorConfig?.macd,
+      },
+      boll: {
+        ...DEFAULT_SETTINGS.indicatorConfig.boll,
+        ...legacyIndicatorConfig.boll,
+        ...parsed.indicatorConfig?.boll,
+      },
+      kdj: {
+        ...DEFAULT_SETTINGS.indicatorConfig.kdj,
+        ...legacyIndicatorConfig.kdj,
+        ...parsed.indicatorConfig?.kdj,
+      },
+      dmi: {
+        ...DEFAULT_SETTINGS.indicatorConfig.dmi,
+        ...legacyIndicatorConfig.dmi,
+        ...parsed.indicatorConfig?.dmi,
+      },
+      sar: {
+        ...DEFAULT_SETTINGS.indicatorConfig.sar,
+        ...legacyIndicatorConfig.sar,
+        ...parsed.indicatorConfig?.sar,
+      },
+      kc: {
+        ...DEFAULT_SETTINGS.indicatorConfig.kc,
+        ...legacyIndicatorConfig.kc,
+        ...parsed.indicatorConfig?.kc,
+      },
+    },
   }
 }
 
 export function saveSettings(settings: AppSettings) {
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings))
+  localStorage.setItem(STORAGE_KEYS.HEATMAP_CONFIG, JSON.stringify(settings.heatmapConfig))
+  localStorage.setItem(STORAGE_KEYS.INDICATOR_CONFIG, JSON.stringify(settings.indicatorConfig))
+}
+
+export function getRefreshInterval(key: keyof AppSettings['refreshInterval']): number {
+  const value = getSettings().refreshInterval[key]
+  return value > 0 ? value : DEFAULT_REFRESH_INTERVALS[key]
 }
 
 type AppSettingsPatch = Partial<{

@@ -154,7 +154,7 @@
         size="small"
         :pagination="{ pageSize: 20 }"
         :loading="isLoading"
-        @row="rowToDetail"
+        :custom-row="rowToDetail"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'select'">

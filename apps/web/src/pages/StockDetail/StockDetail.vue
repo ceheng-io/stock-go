@@ -70,6 +70,8 @@
                 <a-select-option value="change_percent_gte">涨幅 >=</a-select-option>
                 <a-select-option value="change_percent_lte">涨幅 <=</a-select-option>
                 <a-select-option value="amount_gte">成交额 >=</a-select-option>
+                <a-select-option value="near_limit_up">接近涨停</a-select-option>
+                <a-select-option value="near_limit_down">接近跌停</a-select-option>
               </a-select>
             </a-form-item>
             <a-form-item>
@@ -105,7 +107,13 @@
             <a-checkbox-group v-model:value="selectedOverlays" :options="overlayOptions" />
             <a-segmented v-model:value="selectedOscillator" :options="oscillatorOptions" />
           </div>
-          <v-chart class="chart" :option="klineOption" autoresize :not-merge="true" />
+          <KLineChart
+            :rows="klines"
+            :overlays="selectedOverlays"
+            :oscillator="selectedOscillator"
+            :indicator-config="indicatorConfig"
+            empty-text="暂无 K 线数据"
+          />
         </a-tab-pane>
         <a-tab-pane key="fund" tab="历史资金">
           <a-table
@@ -146,8 +154,9 @@ import { message } from 'ant-design-vue'
 import VChart from 'vue-echarts'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
-import { CandlestickChart, LineChart, BarChart } from 'echarts/charts'
+import { LineChart, BarChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, DataZoomComponent, LegendComponent, TitleComponent } from 'echarts/components'
+import KLineChart from '@/components/charts/KLineChart.vue'
 import type { AlertRule, AlertType, FullQuote } from '@/types'
 import { usePolling } from '@/composables/usePolling'
 import {
@@ -162,7 +171,6 @@ import {
   getTodayTimeline,
 } from '@/services/api'
 import {
-  buildIndicatorKlineOption,
   buildMinuteChartOption,
   type IndicatorKlineRow,
   type MinuteKlineRow,
@@ -177,7 +185,7 @@ import {
   getAlertsByCode,
   isInWatchlist,
   getIndicatorConfig,
-  getSettings,
+  getRefreshInterval,
   removeFromWatchlist,
 } from '@/services/storage'
 import {
@@ -194,7 +202,7 @@ import {
   normalizeStockCode,
 } from '@/utils/format'
 
-use([CanvasRenderer, CandlestickChart, LineChart, BarChart, GridComponent, TooltipComponent, DataZoomComponent, LegendComponent, TitleComponent])
+use([CanvasRenderer, LineChart, BarChart, GridComponent, TooltipComponent, DataZoomComponent, LegendComponent, TitleComponent])
 
 type NumberRecord = Record<string, number | string | null | undefined>
 type KlineRow = NumberRecord & IndicatorKlineRow
@@ -229,7 +237,7 @@ const selectedOscillator = ref<OscillatorIndicatorKey>('macd')
 const inWatchlist = ref(false)
 const alertType = ref<AlertType>('price_gte')
 const alertValue = ref<number | null>(null)
-const detailRefreshInterval = getSettings().refreshInterval.detail
+const detailRefreshInterval = getRefreshInterval('detail')
 const fundRefreshInterval = Math.max(detailRefreshInterval * 6, 30000)
 const klinePeriodOptions = [
   { label: '日K', value: 'daily' },
@@ -291,15 +299,6 @@ const timelineOption = computed(() => {
     timeline: timeline.value,
     minuteKline: minuteKlines.value,
     emptyText: minutePeriod.value === '1' ? '暂无分时数据' : '暂无分钟 K 数据',
-  })
-})
-
-const klineOption = computed(() => {
-  return buildIndicatorKlineOption(klines.value, {
-    emptyText: '暂无 K 线数据',
-    overlays: selectedOverlays.value,
-    oscillator: selectedOscillator.value,
-    indicatorConfig,
   })
 })
 

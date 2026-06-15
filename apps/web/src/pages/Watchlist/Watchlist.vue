@@ -164,7 +164,7 @@ import {
   deleteAlertRule,
   deleteWatchlistGroup,
   getAlertRules,
-  getSettings,
+  getRefreshInterval,
   getTableColumns,
   getWatchlistGroups,
   renameWatchlistGroup,
@@ -216,7 +216,7 @@ const sortField = ref<SortField>('default')
 const sortOrder = ref<SortOrder>('desc')
 const visibleColumnKeys = ref<string[]>([])
 const draggedCode = ref('')
-const listRefreshInterval = getSettings().refreshInterval.list
+const listRefreshInterval = getRefreshInterval('list')
 const sortOrderOptions = [
   { label: '降序', value: 'desc' },
   { label: '升序', value: 'asc' },
@@ -397,17 +397,37 @@ async function addCode() {
 }
 
 function importCodes() {
-  const codes = importText.value.split(/[\s,;，；]+/).map(normalizeStockCode).filter((code) => /^(sh|sz|bj)\d{6}$/i.test(code))
-  if (codes.length === 0) {
+  const rawCodes = importText.value.split(/[\s,;，；]+/).map((code) => code.trim()).filter(Boolean)
+  if (rawCodes.length === 0) {
+    message.info('请输入股票代码')
+    return
+  }
+  const validCodes = new Set<string>()
+  const invalidCodes = new Set<string>()
+  rawCodes.forEach((code) => {
+    const normalized = normalizeStockCode(code)
+    if (/^(sh|sz|bj)\d{6}$/i.test(normalized)) {
+      validCodes.add(normalized)
+    } else {
+      invalidCodes.add(code)
+    }
+  })
+  if (validCodes.size === 0) {
     message.warning('未识别到有效 A 股代码')
     return
   }
-  const before = activeCodes.value.length
-  batchAddToWatchlist(codes, activeGroupId.value)
+  const addedCount = batchAddToWatchlist(Array.from(validCodes), activeGroupId.value)
   reloadGroups()
   importText.value = ''
   showImport.value = false
-  message.success(`已导入 ${Math.max(activeCodes.value.length - before, 0)} 只新股票`)
+  if (addedCount > 0) {
+    const suffix = invalidCodes.size > 0 ? `，已跳过 ${invalidCodes.size} 个无效代码` : ''
+    message.success(`已导入 ${addedCount} 只股票${suffix}`)
+  } else if (invalidCodes.size > 0) {
+    message.warning(`未导入新股票，且跳过了 ${invalidCodes.size} 个无效代码`)
+  } else {
+    message.info('所有股票已在自选中')
+  }
   refreshQuotes()
 }
 
@@ -415,7 +435,16 @@ function exportCodes() {
   const text = activeCodes.value.join('\n')
   navigator.clipboard?.writeText(text)
     .then(() => message.success('已复制到剪贴板'))
-    .catch(() => message.info(text || '当前分组为空'))
+    .catch(() => {
+      const blob = new Blob([text], { type: 'text/plain' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `watchlist_${activeGroup.value?.name || 'default'}.txt`
+      link.click()
+      URL.revokeObjectURL(url)
+      message.success('已导出股票代码')
+    })
 }
 
 function batchDelete() {

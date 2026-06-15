@@ -61,7 +61,8 @@ function handleClick(event: { key: string }) {
 <style scoped>
 .sidebar {
   min-height: 100vh;
-  background: #101827;
+  background: var(--color-sidebar-bg);
+  border-inline-end: 1px solid var(--color-border);
 }
 
 .brand {
@@ -70,7 +71,8 @@ function handleClick(event: { key: string }) {
   gap: 10px;
   height: 64px;
   padding: 0 18px;
-  color: #fff;
+  color: var(--color-text-strong);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .brand-mark {
@@ -79,7 +81,8 @@ function handleClick(event: { key: string }) {
   height: 36px;
   place-items: center;
   border-radius: 8px;
-  background: #2563eb;
+  color: #fff;
+  background: var(--color-link);
   font-weight: 700;
 }
 
@@ -89,13 +92,35 @@ function handleClick(event: { key: string }) {
 }
 
 .brand-sub {
-  color: #91a0b8;
+  color: var(--color-muted);
   font-size: 12px;
 }
 
 .nav-menu {
+  padding: 8px;
   border-inline-end: 0;
   background: transparent;
-  color: #cbd5e1;
+  color: var(--color-menu-text);
+}
+
+.nav-menu :deep(.ant-menu-item) {
+  width: 100%;
+  margin-inline: 0;
+  color: var(--color-menu-text);
+  border-radius: 6px;
+}
+
+.nav-menu :deep(.ant-menu-item:hover) {
+  color: var(--color-text-strong);
+  background: var(--color-hover);
+}
+
+.nav-menu :deep(.ant-menu-item-selected) {
+  color: var(--color-menu-active-text);
+  background: var(--color-menu-active-bg);
+}
+
+.nav-menu :deep(.ant-menu-item-selected::after) {
+  display: none;
 }
 </style>

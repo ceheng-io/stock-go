@@ -24,6 +24,8 @@ const drawerOpen = ref(false)
 <style scoped>
 .app-shell {
   min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-bg);
 }
 
 .desktop-sidebar {
@@ -33,6 +35,12 @@ const drawerOpen = ref(false)
 .app-content {
   padding: 18px;
   overflow: auto;
+  background: var(--color-bg);
+}
+
+.mobile-drawer :deep(.ant-drawer-body) {
+  padding: 0;
+  background: var(--color-sidebar-bg);
 }
 
 @media (max-width: 768px) {
