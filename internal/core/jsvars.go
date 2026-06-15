@@ -67,7 +67,7 @@ func FetchJSVars(ctx context.Context, client *http.Client, requestURL string, na
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer drainAndClose(resp.Body)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, HTTPStatusError{
 			StatusCode: resp.StatusCode,

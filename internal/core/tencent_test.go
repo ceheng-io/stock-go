@@ -273,6 +273,33 @@ func TestClientGetTextHTTPStatusReturnsCodedError(t *testing.T) {
 	}
 }
 
+func TestClientGetTextDrainsHTTPErrorResponseBeforeClose(t *testing.T) {
+	body := &drainTrackingBody{content: []byte("temporary upstream failure")}
+	client := NewClient(Config{
+		HTTPClient: &http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusServiceUnavailable,
+				Status:     http.StatusText(http.StatusServiceUnavailable),
+				Body:       body,
+				Header:     make(http.Header),
+				Request:    req,
+			}, nil
+		})},
+		Retry: RetryConfig{MaxRetries: 0, BaseDelay: time.Nanosecond},
+	})
+
+	_, err := client.GetText(context.Background(), "https://drain.test/path")
+	if err == nil {
+		t.Fatal("expected HTTP status error")
+	}
+	if !body.closed {
+		t.Fatal("response body was not closed")
+	}
+	if !body.closedAfterEOF {
+		t.Fatal("response body closed before it was drained to EOF")
+	}
+}
+
 func TestClientGetTextRetriesNetworkErrors(t *testing.T) {
 	transport := &flakyRoundTripper{
 		responses: []roundTripResult{
@@ -809,6 +836,36 @@ type roundTripResult struct {
 	status int
 	body   string
 	err    error
+}
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
+type drainTrackingBody struct {
+	content        []byte
+	offset         int
+	closed         bool
+	sawEOF         bool
+	closedAfterEOF bool
+}
+
+func (b *drainTrackingBody) Read(p []byte) (int, error) {
+	if b.offset >= len(b.content) {
+		b.sawEOF = true
+		return 0, io.EOF
+	}
+	n := copy(p, b.content[b.offset:])
+	b.offset += n
+	return n, nil
+}
+
+func (b *drainTrackingBody) Close() error {
+	b.closed = true
+	b.closedAfterEOF = b.sawEOF
+	return nil
 }
 
 type flakyRoundTripper struct {

@@ -15,6 +15,8 @@ import (
 	"github.com/ceheng.io/stock-go/useragent"
 )
 
+const maxDrainBodyBytes int64 = 512 << 10
+
 // Config contains internal request client configuration.
 type Config struct {
 	BaseURL           string
@@ -442,7 +444,7 @@ func (c *Client) getBytesOnce(ctx context.Context, requestURL string, policy Res
 		c.emitError(requestContext, err)
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer drainAndClose(resp.Body)
 
 	c.safe(func() {
 		if c.hooks.OnResponse != nil {
@@ -469,6 +471,14 @@ func (c *Client) getBytesOnce(ctx context.Context, requestURL string, policy Res
 		return nil, err
 	}
 	return body, nil
+}
+
+func drainAndClose(body io.ReadCloser) {
+	if body == nil {
+		return
+	}
+	_, _ = io.Copy(io.Discard, io.LimitReader(body, maxDrainBodyBytes))
+	_ = body.Close()
 }
 
 type httpStatusError struct {

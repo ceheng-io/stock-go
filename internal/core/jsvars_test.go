@@ -113,3 +113,29 @@ func TestFetchJSVarsRejectsHTTPStatus(t *testing.T) {
 		t.Fatalf("err = %#v, want HTTPStatusError 502", err)
 	}
 }
+
+func TestFetchJSVarsDrainsHTTPErrorResponseBeforeClose(t *testing.T) {
+	body := &drainTrackingBody{content: []byte("bad gateway")}
+	client := &http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusBadGateway,
+			Status:     http.StatusText(http.StatusBadGateway),
+			Body:       body,
+			Header:     make(http.Header),
+			Request:    req,
+		}, nil
+	})}
+
+	_, err := FetchJSVars(context.Background(), client, "https://jsvars-error.test/file.js", []string{"code"}, FetchJSVarsOptions{
+		Timeout: time.Second,
+	})
+	if err == nil {
+		t.Fatal("expected HTTP status error")
+	}
+	if !body.closed {
+		t.Fatal("response body was not closed")
+	}
+	if !body.closedAfterEOF {
+		t.Fatal("response body closed before it was drained to EOF")
+	}
+}

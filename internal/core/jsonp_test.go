@@ -99,3 +99,30 @@ func TestJSONPRequestRejectsHTTPStatus(t *testing.T) {
 		t.Fatalf("err = %#v, want HTTPStatusError 502", err)
 	}
 }
+
+func TestJSONPRequestDrainsHTTPErrorResponseBeforeClose(t *testing.T) {
+	body := &drainTrackingBody{content: []byte("bad gateway")}
+	client := &http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusBadGateway,
+			Status:     http.StatusText(http.StatusBadGateway),
+			Body:       body,
+			Header:     make(http.Header),
+			Request:    req,
+		}, nil
+	})}
+
+	var payload map[string]any
+	err := JSONPRequest(context.Background(), client, "https://jsonp-error.test/api", &payload, JSONPOptions{
+		Timeout: time.Second,
+	})
+	if err == nil {
+		t.Fatal("expected HTTP status error")
+	}
+	if !body.closed {
+		t.Fatal("response body was not closed")
+	}
+	if !body.closedAfterEOF {
+		t.Fatal("response body closed before it was drained to EOF")
+	}
+}

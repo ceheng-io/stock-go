@@ -101,7 +101,7 @@ func JSONPRequest(ctx context.Context, client *http.Client, requestURL string, t
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer drainAndClose(resp.Body)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return HTTPStatusError{
 			StatusCode: resp.StatusCode,
