@@ -29,6 +29,7 @@ type Config struct {
 	FundListURL       string
 	EastmoneyKlineURL string
 	HTTPClient        *http.Client
+	ProxyPool         ProxyPoolConfig
 	Timeout           time.Duration
 	UserAgent         string
 	RotateUserAgent   bool
@@ -177,6 +178,7 @@ func NewClient(config Config) *Client {
 	if config.HTTPClient == nil {
 		config.HTTPClient = http.DefaultClient
 	}
+	config.HTTPClient = httpClientWithProxyPool(config.HTTPClient, NewProxyPool(config.ProxyPool.URLs))
 	if config.Timeout <= 0 {
 		config.Timeout = 30 * time.Second
 	}
@@ -235,6 +237,33 @@ func NewClient(config Config) *Client {
 		providerPolicies:  resolveProviderPolicies(defaultPolicy, config.ProviderPolicies),
 		hooks:             config.Hooks,
 	}
+}
+
+func httpClientWithProxyPool(client *http.Client, proxyPool *ProxyPool) *http.Client {
+	if proxyPool == nil {
+		return client
+	}
+	if client == nil {
+		client = http.DefaultClient
+	}
+	var transport *http.Transport
+	switch current := client.Transport.(type) {
+	case nil:
+		if defaultTransport, ok := http.DefaultTransport.(*http.Transport); ok {
+			transport = defaultTransport.Clone()
+		}
+	case *http.Transport:
+		transport = current.Clone()
+	default:
+		return client
+	}
+	if transport == nil {
+		return client
+	}
+	transport.Proxy = proxyPool.Proxy
+	cloned := *client
+	cloned.Transport = transport
+	return &cloned
 }
 
 // TencentMinuteURL returns the configured Tencent minute URL.

@@ -549,6 +549,112 @@ func TestClientGetTextRetriesOnlyOriginalHostBeforeFallback(t *testing.T) {
 	}
 }
 
+func TestClientProxyPoolRotatesOnRetries(t *testing.T) {
+	proxyCalls := []string{}
+	firstProxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxyCalls = append(proxyCalls, "first:"+r.Host)
+		http.Error(w, "rate limited", http.StatusTooManyRequests)
+	}))
+	defer firstProxy.Close()
+	secondProxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxyCalls = append(proxyCalls, "second:"+r.Host)
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer secondProxy.Close()
+
+	client := NewClient(Config{
+		ProxyPool: ProxyPoolConfig{URLs: []string{
+			firstProxy.URL,
+			secondProxy.URL,
+		}},
+		Retry: RetryConfig{MaxRetries: 1, BaseDelay: time.Nanosecond},
+	})
+
+	text, err := client.GetText(context.Background(), "http://target.test/path")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if text != "ok" {
+		t.Fatalf("text = %q, want ok", text)
+	}
+	want := []string{"first:target.test", "second:target.test"}
+	if strings.Join(proxyCalls, "|") != strings.Join(want, "|") {
+		t.Fatalf("proxy calls = %#v, want %#v", proxyCalls, want)
+	}
+}
+
+func TestClientProxyPoolClonesHTTPTransport(t *testing.T) {
+	proxyServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer proxyServer.Close()
+
+	transport := &http.Transport{
+		DisableCompression: true,
+	}
+	httpClient := &http.Client{
+		Transport: transport,
+		Timeout:   2 * time.Second,
+	}
+	client := NewClient(Config{
+		HTTPClient: httpClient,
+		ProxyPool:  ProxyPoolConfig{URLs: []string{proxyServer.URL}},
+	})
+
+	if client.httpClient == httpClient {
+		t.Fatal("client reused original HTTP client, want cloned client")
+	}
+	if client.httpClient.Timeout != 2*time.Second {
+		t.Fatalf("Timeout = %s, want 2s", client.httpClient.Timeout)
+	}
+	clonedTransport, ok := client.httpClient.Transport.(*http.Transport)
+	if !ok {
+		t.Fatalf("Transport = %T, want *http.Transport", client.httpClient.Transport)
+	}
+	if clonedTransport == transport {
+		t.Fatal("transport was not cloned")
+	}
+	if !clonedTransport.DisableCompression {
+		t.Fatal("DisableCompression was not preserved")
+	}
+	if clonedTransport.Proxy == nil {
+		t.Fatal("Proxy was not configured")
+	}
+}
+
+func TestClientProxyPoolDoesNotOverrideCustomRoundTripper(t *testing.T) {
+	calls := 0
+	customTransport := roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		calls++
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Status:     http.StatusText(http.StatusOK),
+			Body:       io.NopCloser(strings.NewReader("ok")),
+			Header:     make(http.Header),
+			Request:    req,
+		}, nil
+	})
+	httpClient := &http.Client{Transport: customTransport}
+	client := NewClient(Config{
+		HTTPClient: httpClient,
+		ProxyPool:  ProxyPoolConfig{URLs: []string{"http://proxy.test:8080"}},
+	})
+
+	text, err := client.GetText(context.Background(), "http://target.test/path")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if text != "ok" {
+		t.Fatalf("text = %q, want ok", text)
+	}
+	if calls != 1 {
+		t.Fatalf("custom transport calls = %d, want 1", calls)
+	}
+	if client.httpClient != httpClient {
+		t.Fatal("custom round tripper client was replaced")
+	}
+}
+
 func TestClientGetTextUsesProviderSpecificRetryPolicy(t *testing.T) {
 	transport := &providerPolicyRoundTripper{
 		responses: map[string][]roundTripResult{
