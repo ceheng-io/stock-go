@@ -34,6 +34,8 @@ go get github.com/ceheng.io/stock-go
 import stock "github.com/ceheng.io/stock-go"
 ```
 
+更完整的接入说明、场景示例、错误处理、请求治理和生产注意事项见 [docs/usage.md](docs/usage.md)。
+
 ## 快速开始
 
 ```go
@@ -80,9 +82,10 @@ fmt.Println(stock.ToEastmoneySecid(symbol))   // TS 风格别名
 
 ```go
 rows, err := sdk.Kline.CN(ctx, "600519", stock.HistoryKlineOptions{
-	Period: stock.KlinePeriodDaily,
-	Adjust: stock.AdjustQFQ,
-	Limit:  120,
+	Period:    stock.KlinePeriodDaily,
+	Adjust:    stock.AdjustQFQ,
+	StartDate: "20250101",
+	EndDate:   "20250613",
 })
 if err != nil {
 	panic(err)
@@ -186,8 +189,9 @@ _, _, _, _ = fundFlow, northbound, dragonTiger, err
 
 ```go
 futures, err := sdk.Futures.Kline(ctx, "rb2605", stock.FuturesKlineOptions{
-	Period: stock.KlinePeriodDaily,
-	Limit:  120,
+	Period:    stock.KlinePeriodDaily,
+	StartDate: "20250101",
+	EndDate:   "20250613",
 })
 if err != nil {
 	panic(err)
