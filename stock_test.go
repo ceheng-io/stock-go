@@ -10,6 +10,40 @@ import (
 	"github.com/ceheng.io/stock-go/internal/core"
 )
 
+func TestWithProxyPoolStoresURLs(t *testing.T) {
+	client := New(WithProxyPool([]string{
+		" http://proxy-a.test:8080 ",
+		"",
+		"http://proxy-b.test:8080",
+	}))
+
+	if got, want := client.config.ProxyPool.URLs, []string{"http://proxy-a.test:8080", "http://proxy-b.test:8080"}; !equalStringSlices(got, want) {
+		t.Fatalf("ProxyPool.URLs = %#v, want %#v", got, want)
+	}
+}
+
+func TestWithProxyPoolOptionsCopiesURLs(t *testing.T) {
+	urls := []string{"http://proxy-a.test:8080"}
+	client := New(WithProxyPoolOptions(ProxyPoolOptions{URLs: urls}))
+	urls[0] = "http://mutated.test:8080"
+
+	if got := client.config.ProxyPool.URLs; len(got) != 1 || got[0] != "http://proxy-a.test:8080" {
+		t.Fatalf("ProxyPool.URLs = %#v, want immutable copy", got)
+	}
+}
+
+func equalStringSlices(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func TestNewAppliesOptions(t *testing.T) {
 	httpClient := &http.Client{Timeout: 2 * time.Second}
 

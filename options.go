@@ -2,6 +2,7 @@ package stock
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ceheng.io/stock-go/constants"
@@ -15,6 +16,7 @@ type Option func(*Config)
 // Config contains root SDK configuration.
 type Config struct {
 	HTTPClient                       *http.Client
+	ProxyPool                        ProxyPoolOptions
 	BaseURL                          string
 	TencentMinuteURL                 string
 	SearchBaseURL                    string
@@ -92,6 +94,11 @@ type RetryOptions struct {
 type RateLimitOptions struct {
 	RequestsPerSecond float64
 	MaxBurst          float64
+}
+
+// ProxyPoolOptions controls round-robin proxy selection for provider requests.
+type ProxyPoolOptions struct {
+	URLs []string
 }
 
 // ProviderName identifies an upstream data source for provider-level policies.
@@ -236,6 +243,20 @@ func WithHTTPClient(client *http.Client) Option {
 	return func(config *Config) {
 		if client != nil {
 			config.HTTPClient = client
+		}
+	}
+}
+
+// WithProxyPool configures round-robin proxy URLs for provider requests.
+func WithProxyPool(urls []string) Option {
+	return WithProxyPoolOptions(ProxyPoolOptions{URLs: urls})
+}
+
+// WithProxyPoolOptions configures round-robin proxy selection for provider requests.
+func WithProxyPoolOptions(options ProxyPoolOptions) Option {
+	return func(config *Config) {
+		config.ProxyPool = ProxyPoolOptions{
+			URLs: normalizeProxyPoolURLs(options.URLs),
 		}
 	}
 }
@@ -407,6 +428,24 @@ func cloneStringMap(values map[string]string) map[string]string {
 		cloned[key] = value
 	}
 	return cloned
+}
+
+func normalizeProxyPoolURLs(urls []string) []string {
+	if len(urls) == 0 {
+		return nil
+	}
+	normalized := make([]string, 0, len(urls))
+	for _, rawURL := range urls {
+		rawURL = strings.TrimSpace(rawURL)
+		if rawURL == "" {
+			continue
+		}
+		normalized = append(normalized, rawURL)
+	}
+	if len(normalized) == 0 {
+		return nil
+	}
+	return normalized
 }
 
 func boolPtr(value bool) *bool {
