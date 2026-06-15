@@ -151,6 +151,8 @@ export interface ZTPoolItem {
   failedCount?: number | null
   industry?: string | null
   ztStatistics?: string | null
+  limitUpType?: string | null
+  reasonType?: string | null
   amplitude?: number | null
   speed?: number | null
 }

@@ -6,33 +6,20 @@ import { sortBoardRankings } from '@/services/rankings'
 import type { Board, ZTPoolItem } from '@/types'
 
 const push = vi.fn()
+const apiMocks = vi.hoisted(() => ({
+  getIndustryList: vi.fn(),
+  getConceptList: vi.fn(),
+  getZTPool: vi.fn(),
+}))
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push }),
 }))
 
 vi.mock('@/services/api', () => ({
-  getIndustryList: vi.fn(async (): Promise<Board[]> => [
-    board({ rank: 1, code: 'BK0475', name: '酿酒行业', changePercent: 2.5 }),
-  ]),
-  getConceptList: vi.fn(async (): Promise<Board[]> => [
-    board({ rank: 1, code: 'BK1234', name: '白酒概念', changePercent: 3.1 }),
-  ]),
-  getZTPool: vi.fn(async (): Promise<ZTPoolItem[]> => [
-    {
-      code: '002190',
-      name: '成飞集成',
-      changePercent: 10.01,
-      price: 22.45,
-      amount: 125000,
-      turnoverRate: 8.32,
-      continuousBoardCount: 2,
-      firstBoardTime: '09:33:12',
-      lastBoardTime: '14:56:00',
-      industry: '军工',
-      ztStatistics: '2/3',
-    },
-  ]),
+  getIndustryList: apiMocks.getIndustryList,
+  getConceptList: apiMocks.getConceptList,
+  getZTPool: apiMocks.getZTPool,
 }))
 
 function board(partial: Partial<Board>): Board {
@@ -46,9 +33,32 @@ function board(partial: Partial<Board>): Board {
   }
 }
 
+function limitUpItem(partial: Partial<ZTPoolItem> = {}): ZTPoolItem {
+  return {
+    code: partial.code || '002190',
+    name: partial.name || '成飞集成',
+    changePercent: partial.changePercent ?? 10.01,
+    price: partial.price ?? 22.45,
+    amount: partial.amount ?? 125000,
+    turnoverRate: partial.turnoverRate ?? 8.32,
+    continuousBoardCount: partial.continuousBoardCount ?? 2,
+    firstBoardTime: partial.firstBoardTime || '09:33:12',
+    lastBoardTime: partial.lastBoardTime || '14:56:00',
+    industry: partial.industry || '军工',
+    ztStatistics: partial.ztStatistics || '2/3',
+  }
+}
+
 describe('ranking helpers', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    apiMocks.getIndustryList.mockResolvedValue([
+      board({ rank: 1, code: 'BK0475', name: '酿酒行业', changePercent: 2.5 }),
+    ])
+    apiMocks.getConceptList.mockResolvedValue([
+      board({ rank: 1, code: 'BK1234', name: '白酒概念', changePercent: 3.1 }),
+    ])
+    apiMocks.getZTPool.mockResolvedValue([limitUpItem()])
   })
 
   it('sorts boards by rise fall amount and turnover', () => {
@@ -72,6 +82,15 @@ describe('ranking helpers', () => {
   })
 
   it('passes ranking row navigation through Ant Design table customRow', async () => {
+    const segmentedStub = defineComponent({
+      name: 'ASegmented',
+      props: {
+        value: { type: String, default: '' },
+        options: { type: Array, default: () => [] },
+      },
+      emits: ['update:value'],
+      template: '<button v-for="option in options" :key="option.value" @click="$emit(\'update:value\', option.value)">{{ option.label }}</button>',
+    })
     const tableStub = defineComponent({
       name: 'ATable',
       props: {
@@ -89,7 +108,7 @@ describe('ranking helpers', () => {
           ACard: { template: '<section><slot /><slot name="title" /><slot name="extra" /></section>' },
           ACol: { template: '<div><slot /></div>' },
           ARow: { template: '<div><slot /></div>' },
-          ASegmented: true,
+          ASegmented: segmentedStub,
           ASpace: { template: '<div><slot /></div>' },
           AStatistic: true,
           ATable: tableStub,
@@ -100,14 +119,17 @@ describe('ranking helpers', () => {
     await flushPromises()
     await nextTick()
 
-    const customRow = wrapper.findAllComponents(tableStub)[1].props('customRow')
+    wrapper.findAllComponents(segmentedStub)[0].vm.$emit('update:value', 'industry')
+    await nextTick()
+
+    const customRow = wrapper.findAllComponents(tableStub)[0].props('customRow')
     expect(customRow).toEqual(expect.any(Function))
 
     customRow?.({ code: 'BK0475' }).onClick()
     expect(push).toHaveBeenCalledWith('/boards/industry/BK0475')
   })
 
-  it('shows the daily limit-up pool on the rankings page', async () => {
+  it('shows the daily limit-up pool in its own ranking tab', async () => {
     const cardStub = defineComponent({
       name: 'ACard',
       props: { title: { type: String, default: '' } },
@@ -135,8 +157,11 @@ describe('ranking helpers', () => {
           ACard: cardStub,
           ACol: { template: '<div><slot /></div>' },
           ARow: { template: '<div><slot /></div>' },
-          ASegmented: true,
           ASpace: { template: '<div><slot /></div>' },
+          ASegmented: {
+            props: ['options'],
+            template: '<div><button v-for="option in options" :key="option.value">{{ option.label }}</button></div>',
+          },
           AStatistic: {
             props: ['title', 'value', 'suffix'],
             template: '<div>{{ title }} {{ value }}{{ suffix }}</div>',
@@ -154,5 +179,50 @@ describe('ranking helpers', () => {
     expect(wrapper.text()).toContain('2连板')
     expect(wrapper.text()).toContain('军工')
     expect(wrapper.text()).toContain('涨停家数 1')
+    expect(wrapper.text()).toContain('行业板块')
+    expect(wrapper.text()).toContain('概念板块')
+    expect(wrapper.text()).not.toContain('酿酒行业')
+    expect(wrapper.text()).not.toContain('白酒概念')
+  })
+
+  it('keeps successful limit-up rows visible when board rankings fail', async () => {
+    apiMocks.getIndustryList.mockRejectedValue(new Error('industry failed'))
+    apiMocks.getConceptList.mockRejectedValue(new Error('concept failed'))
+
+    const wrapper = mount(Rankings, {
+      global: {
+        stubs: {
+          AAlert: {
+            props: ['message'],
+            template: '<div>{{ message }}</div>',
+          },
+          AButton: true,
+          ACard: {
+            props: { title: { type: String, default: '' } },
+            template: '<section><h2>{{ title }}</h2><slot /></section>',
+          },
+          ACol: { template: '<div><slot /></div>' },
+          ARow: { template: '<div><slot /></div>' },
+          ASegmented: true,
+          ASpace: { template: '<div><slot /></div>' },
+          AStatistic: {
+            props: ['title', 'value', 'suffix'],
+            template: '<div>{{ title }} {{ value }}{{ suffix }}</div>',
+          },
+          ATable: {
+            props: {
+              dataSource: { type: Array, default: () => [] },
+            },
+            template: '<div><div v-for="row in dataSource" :key="row.code">{{ row.name }}</div></div>',
+          },
+          ATag: { template: '<span><slot /></span>' },
+        },
+      },
+    })
+    await flushPromises()
+    await nextTick()
+
+    expect(wrapper.text()).toContain('成飞集成')
+    expect(wrapper.text()).toContain('榜单数据部分加载失败，请稍后刷新')
   })
 })

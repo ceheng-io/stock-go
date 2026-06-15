@@ -6,14 +6,15 @@
         <div class="page-subtitle">行业与概念强弱、领涨股和资金容量对照</div>
       </div>
       <a-space>
-        <a-segmented v-model:value="rankType" :options="rankOptions" />
+        <a-segmented v-model:value="activeRankView" :options="rankViewOptions" />
+        <a-segmented v-if="activeRankView !== 'limitUp'" v-model:value="rankType" :options="rankOptions" />
         <a-button :loading="loading" @click="load">刷新</a-button>
       </a-space>
     </div>
 
     <a-alert v-if="errorMessage" type="warning" show-icon closable :message="errorMessage" @close="errorMessage = ''" />
 
-    <a-card title="当日涨停板" size="small">
+    <a-card v-if="activeRankView === 'limitUp'" title="当日涨停板" size="small">
       <template #extra>
         <span class="muted">数据源：涨停池</span>
       </template>
@@ -69,98 +70,49 @@
       </a-table>
     </a-card>
 
-    <a-row :gutter="[12, 12]">
-      <a-col :xs="24" :lg="12">
-        <a-card title="行业板块" size="small">
-          <a-table
-            :columns="columns"
-            :data-source="sortedIndustry"
-            :pagination="{ pageSize: 20 }"
-            :loading="loading && industry.length === 0"
-            size="small"
-            row-key="code"
-            :custom-row="rowTo('industry')"
-          >
-            <template #bodyCell="{ column, record, index }">
-              <template v-if="column.key === 'rank'">
-                <span class="rank-num" :class="{ top: index < 3 }">{{ index + 1 }}</span>
-              </template>
-              <template v-else-if="column.key === 'name'">
-                <div class="board-name">{{ record.name }}</div>
-                <div class="muted">{{ record.code }}</div>
-              </template>
-              <template v-else-if="column.key === 'changePercent'">
-                <span :class="getChangeColorClass(record.changePercent)">
-                  {{ formatPercent(record.changePercent) }}
-                </span>
-              </template>
-              <template v-else-if="column.key === 'leadingStock'">
-                <div>{{ record.leadingStock || '--' }}</div>
-                <div class="muted" :class="getChangeColorClass(record.leadingStockChangePercent)">
-                  {{ formatPercent(record.leadingStockChangePercent) }}
-                </div>
-              </template>
-              <template v-else-if="column.key === 'breadth'">
-                <span class="text-rise">{{ record.riseCount ?? '--' }}</span>
-                <span class="muted"> / </span>
-                <span class="text-fall">{{ record.fallCount ?? '--' }}</span>
-              </template>
-              <template v-else-if="column.key === 'totalMarketCap'">
-                {{ formatMarketCap(record.totalMarketCap) }}
-              </template>
-              <template v-else-if="column.key === 'turnoverRate'">
-                {{ formatTurnover(record.turnoverRate) }}
-              </template>
-            </template>
-          </a-table>
-        </a-card>
-      </a-col>
-      <a-col :xs="24" :lg="12">
-        <a-card title="概念板块" size="small">
-          <a-table
-            :columns="columns"
-            :data-source="sortedConcept"
-            :pagination="{ pageSize: 20 }"
-            :loading="loading && concept.length === 0"
-            size="small"
-            row-key="code"
-            :custom-row="rowTo('concept')"
-          >
-            <template #bodyCell="{ column, record, index }">
-              <template v-if="column.key === 'rank'">
-                <span class="rank-num" :class="{ top: index < 3 }">{{ index + 1 }}</span>
-              </template>
-              <template v-else-if="column.key === 'name'">
-                <div class="board-name">{{ record.name }}</div>
-                <div class="muted">{{ record.code }}</div>
-              </template>
-              <template v-else-if="column.key === 'changePercent'">
-                <span :class="getChangeColorClass(record.changePercent)">
-                  {{ formatPercent(record.changePercent) }}
-                </span>
-              </template>
-              <template v-else-if="column.key === 'leadingStock'">
-                <div>{{ record.leadingStock || '--' }}</div>
-                <div class="muted" :class="getChangeColorClass(record.leadingStockChangePercent)">
-                  {{ formatPercent(record.leadingStockChangePercent) }}
-                </div>
-              </template>
-              <template v-else-if="column.key === 'breadth'">
-                <span class="text-rise">{{ record.riseCount ?? '--' }}</span>
-                <span class="muted"> / </span>
-                <span class="text-fall">{{ record.fallCount ?? '--' }}</span>
-              </template>
-              <template v-else-if="column.key === 'totalMarketCap'">
-                {{ formatMarketCap(record.totalMarketCap) }}
-              </template>
-              <template v-else-if="column.key === 'turnoverRate'">
-                {{ formatTurnover(record.turnoverRate) }}
-              </template>
-            </template>
-          </a-table>
-        </a-card>
-      </a-col>
-    </a-row>
+    <a-card v-else :title="activeRankView === 'industry' ? '行业板块' : '概念板块'" size="small">
+      <a-table
+        :columns="columns"
+        :data-source="activeBoardRows"
+        :pagination="{ pageSize: 20 }"
+        :loading="loading && activeBoardRows.length === 0"
+        size="small"
+        row-key="code"
+        :custom-row="rowTo(activeRankView)"
+      >
+        <template #bodyCell="{ column, record, index }">
+          <template v-if="column.key === 'rank'">
+            <span class="rank-num" :class="{ top: index < 3 }">{{ index + 1 }}</span>
+          </template>
+          <template v-else-if="column.key === 'name'">
+            <div class="board-name">{{ record.name }}</div>
+            <div class="muted">{{ record.code }}</div>
+          </template>
+          <template v-else-if="column.key === 'changePercent'">
+            <span :class="getChangeColorClass(record.changePercent)">
+              {{ formatPercent(record.changePercent) }}
+            </span>
+          </template>
+          <template v-else-if="column.key === 'leadingStock'">
+            <div>{{ record.leadingStock || '--' }}</div>
+            <div class="muted" :class="getChangeColorClass(record.leadingStockChangePercent)">
+              {{ formatPercent(record.leadingStockChangePercent) }}
+            </div>
+          </template>
+          <template v-else-if="column.key === 'breadth'">
+            <span class="text-rise">{{ record.riseCount ?? '--' }}</span>
+            <span class="muted"> / </span>
+            <span class="text-fall">{{ record.fallCount ?? '--' }}</span>
+          </template>
+          <template v-else-if="column.key === 'totalMarketCap'">
+            {{ formatMarketCap(record.totalMarketCap) }}
+          </template>
+          <template v-else-if="column.key === 'turnoverRate'">
+            {{ formatTurnover(record.turnoverRate) }}
+          </template>
+        </template>
+      </a-table>
+    </a-card>
   </div>
 </template>
 
@@ -179,13 +131,21 @@ import {
   getChangeColorClass,
 } from '@/utils/format'
 
+type RankView = 'limitUp' | 'industry' | 'concept'
+
 const router = useRouter()
+const activeRankView = ref<RankView>('limitUp')
 const rankType = ref<BoardRankingType>('rise')
 const industry = ref<Board[]>([])
 const concept = ref<Board[]>([])
 const limitUpPool = ref<ZTPoolItem[]>([])
 const loading = ref(false)
 const errorMessage = ref('')
+const rankViewOptions = [
+  { label: '涨停板', value: 'limitUp' },
+  { label: '行业板块', value: 'industry' },
+  { label: '概念板块', value: 'concept' },
+]
 const rankOptions = [
   { label: '涨幅榜', value: 'rise' },
   { label: '跌幅榜', value: 'fall' },
@@ -217,6 +177,7 @@ const limitUpColumns = [
 
 const sortedIndustry = computed(() => sortBoardRankings(industry.value, rankType.value, 50))
 const sortedConcept = computed(() => sortBoardRankings(concept.value, rankType.value, 50))
+const activeBoardRows = computed(() => activeRankView.value === 'industry' ? sortedIndustry.value : sortedConcept.value)
 const maxContinuousBoards = computed(() => {
   return Math.max(0, ...limitUpPool.value.map((item) => Number(item.continuousBoardCount || 0)))
 })
@@ -234,18 +195,26 @@ const totalSealAmount = computed(() => {
 async function load() {
   loading.value = true
   errorMessage.value = ''
-  try {
-    ;[industry.value, concept.value, limitUpPool.value] = await Promise.all([
-      getIndustryList(),
-      getConceptList(),
-      getZTPool(),
-    ])
-  } catch (error) {
-    console.warn('Rankings data loading failed', error)
-    errorMessage.value = '榜单数据加载失败，请稍后刷新'
-  } finally {
-    loading.value = false
+  const results = await Promise.allSettled([
+    getIndustryList(),
+    getConceptList(),
+    getZTPool(),
+  ])
+  const [industryResult, conceptResult, limitUpResult] = results
+  if (industryResult.status === 'fulfilled') industry.value = industryResult.value
+  if (conceptResult.status === 'fulfilled') concept.value = conceptResult.value
+  if (limitUpResult.status === 'fulfilled') limitUpPool.value = limitUpResult.value
+
+  const failed = results.filter((result) => result.status === 'rejected')
+  if (failed.length > 0) {
+    failed.forEach((result) => {
+      if (result.status === 'rejected') console.warn('Rankings data loading failed', result.reason)
+    })
+    errorMessage.value = failed.length === results.length
+      ? '榜单数据加载失败，请稍后刷新'
+      : '榜单数据部分加载失败，请稍后刷新'
   }
+  loading.value = false
 }
 
 function rowTo(type: 'industry' | 'concept') {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { apiRequest, getBoardSpot, getFullQuotes } from '@/services/api'
+import { apiRequest, getBoardSpot, getFullQuotes, getZTPool } from '@/services/api'
 
 describe('api client', () => {
   afterEach(() => {
@@ -85,6 +85,50 @@ describe('api client', () => {
       { item: 'price', value: 1234.56 },
       { item: 'changePercent', value: 1.23 },
       { item: 'totalMarketCap', value: 987654321 },
+    ])
+  })
+
+  it('normalizes wrapped limit-up pool payloads into rows', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          Items: [
+            {
+              Code: '002190',
+              Name: '成飞集成',
+              Latest: 22.45,
+              ChangeRate: 10.01,
+              FirstLimitUpTimeText: '09:33:12',
+              LastLimitUpTimeText: '14:56:00',
+              OrderAmount: 420000000,
+              TurnoverRate: 8.32,
+              HighDays: '2天2板',
+              HighDaysValue: 2,
+              ReasonType: '低空经济',
+              LimitUpType: '换手板',
+            },
+          ],
+        }),
+      }),
+    )
+
+    await expect(getZTPool()).resolves.toEqual([
+      expect.objectContaining({
+        code: '002190',
+        name: '成飞集成',
+        price: 22.45,
+        changePercent: 10.01,
+        firstBoardTime: '09:33:12',
+        lastBoardTime: '14:56:00',
+        sealAmount: 420000000,
+        turnoverRate: 8.32,
+        continuousBoardCount: 2,
+        industry: '低空经济',
+        ztStatistics: '2天2板',
+        limitUpType: '换手板',
+      }),
     ])
   })
 })

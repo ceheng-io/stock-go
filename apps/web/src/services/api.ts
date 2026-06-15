@@ -209,7 +209,52 @@ export function getNorthboundIndividual(symbol: string, options?: Record<string,
 }
 
 export function getZTPool(type = 'zt', date?: string) {
-  return apiRequest<ZTPoolItem[]>(`/market-event/zt-pool${query({ type, date })}`)
+  return apiRequest<unknown>(`/market-event/zt-pool${query({ type, date })}`).then(normalizeZTPoolRows)
+}
+
+function normalizeZTPoolRows(payload: unknown): ZTPoolItem[] {
+  const rows = Array.isArray(payload)
+    ? payload
+    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
+      ? (payload as { items: unknown[] }).items
+      : []
+
+  return rows.map((row) => normalizeZTPoolItem(row)).filter((row) => row.code || row.name)
+}
+
+function normalizeZTPoolItem(row: unknown): ZTPoolItem {
+  const item = row && typeof row === 'object' ? row as Record<string, unknown> : {}
+  return {
+    code: stringValue(item.code),
+    name: stringValue(item.name),
+    price: numberValue(item.price ?? item.latest),
+    changePercent: numberValue(item.changePercent ?? item.changeRate),
+    limitPrice: numberValue(item.limitPrice),
+    amount: numberValue(item.amount),
+    floatMarketValue: numberValue(item.floatMarketValue ?? item.currencyValue),
+    totalMarketValue: numberValue(item.totalMarketValue),
+    turnoverRate: numberValue(item.turnoverRate),
+    continuousBoardCount: numberValue(item.continuousBoardCount ?? item.highDaysValue),
+    firstBoardTime: stringValue(item.firstBoardTime ?? item.firstLimitUpTimeText),
+    lastBoardTime: stringValue(item.lastBoardTime ?? item.lastLimitUpTimeText),
+    boardAmount: numberValue(item.boardAmount),
+    sealAmount: numberValue(item.sealAmount ?? item.orderAmount),
+    failedCount: numberValue(item.failedCount ?? item.openNum),
+    industry: stringValue(item.industry ?? item.reasonType),
+    ztStatistics: stringValue(item.ztStatistics ?? item.highDays),
+    limitUpType: stringValue(item.limitUpType),
+    reasonType: stringValue(item.reasonType),
+    amplitude: numberValue(item.amplitude),
+    speed: numberValue(item.speed),
+  }
+}
+
+function stringValue(value: unknown): string {
+  return typeof value === 'string' ? value : ''
+}
+
+function numberValue(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
 export function getStockChanges(type = 'large_buy') {
