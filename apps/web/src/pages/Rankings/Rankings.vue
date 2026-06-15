@@ -196,7 +196,8 @@ const totalSealAmount = computed(() => {
 
 async function load() {
   errorMessage.value = ''
-  const results = await Promise.allSettled([loadBoards(), loadLimitUpPool()])
+  const [boardResults, limitUpResults] = await Promise.all([loadBoards(), loadLimitUpPool()])
+  const results = [...boardResults, ...limitUpResults]
 
   const failed = results.filter((result) => result.status === 'rejected')
   if (failed.length > 0) {
@@ -212,18 +213,14 @@ async function load() {
 async function loadBoards() {
   boardLoading.value = true
   try {
-    const results = await Promise.allSettled([
-      getIndustryList(),
-      getConceptList(),
+    return await Promise.allSettled([
+      getIndustryList().then((value) => {
+        industry.value = value
+      }),
+      getConceptList().then((value) => {
+        concept.value = value
+      }),
     ])
-    const [industryResult, conceptResult] = results
-    if (industryResult.status === 'fulfilled') industry.value = industryResult.value
-    if (conceptResult.status === 'fulfilled') concept.value = conceptResult.value
-
-    const failed = results.filter((result) => result.status === 'rejected')
-    if (failed.length > 0) {
-      throw new AggregateError(failed.map((result) => result.status === 'rejected' ? result.reason : undefined), 'board rankings failed')
-    }
   } finally {
     boardLoading.value = false
   }
@@ -232,7 +229,11 @@ async function loadBoards() {
 async function loadLimitUpPool() {
   limitUpLoading.value = true
   try {
-    limitUpPool.value = await getZTPool()
+    return await Promise.allSettled([
+      getZTPool().then((value) => {
+        limitUpPool.value = value
+      }),
+    ])
   } finally {
     limitUpLoading.value = false
   }
