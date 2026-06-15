@@ -2,65 +2,39 @@
 
 `stock-go` 是“策衡”的 Go 版本股票行情 SDK，迁移自 TypeScript 项目 `/Users/xingyys/project/html/stock-sdk`。
 
-当前仓库的 Go module：
+它面向 Go 服务端、命令行工具、数据任务和后续 Web/API 应用，提供 A 股、港股、美股、公募基金、期货、期权、资金流、北向资金、龙虎榜、大宗交易、融资融券、涨停池等公开行情数据能力。
 
 ```go
 module github.com/ceheng.io/stock-go
 ```
 
-## 当前阶段
+当前阶段已经按 SDK v0.1 收口；CLI、MCP、后端 API 和 Web 前端属于后续应用层。收口边界见 [docs/sdk-v0.1-acceptance.md](docs/sdk-v0.1-acceptance.md)。
 
-第一阶段先建设 SDK 库底座：
+## 特性
 
-- 根包 `stock`：`Client`、`New`、请求超时、重试、限流、熔断、User-Agent、HTTP client 注入和结构化统一错误类型。
-- `cache` 与根包缓存工具：`MemoryCache`、`MemoryCacheStore`、`NewMemoryCache`、`GetSharedCache`、`CreateCacheKey`、`CacheThrough`，提供内存 TTL/LRU 缓存、共享缓存、缓存 key 生成和 single-flight 缓存穿透 helper。
-- `symbols` 与根包符号工具：`NormalizeSymbol`、`ToTencentSymbol`、`ToEastmoneySecID`、`ToEastmoneySecid`、`ToPlainCode`、`InferAShareExchange`、`ExtractVariety`、`FuturesExchanges`，以及股票/基金/期货/板块代码归一化和数据源代码适配。
-- `indicators` 与根包指标工具：MA/SMA/EMA/WMA、MACD、BOLL、KDJ、RSI、WR、BIAS、CCI、ATR、OBV、ROC、DMI、SAR、KC、`AddIndicators`、`BuildIndicatorContext`、`GetEnabledIndicatorKeys`、`EstimateIndicatorLookback` 等技术指标和指标注册辅助能力。
-- `signals` 与根包信号工具：`CalcSignals`，基于已计算指标的金叉/死叉、超买/超卖、布林突破和 SAR 反转信号识别。
-- `screener` 与根包选股/回测工具：`Screen`、`Backtest`，提供本地链式选股筛选器和单标的全仓多头轻量回测。
-- `types`：行情、K 线、板块、资金流、北向、龙虎榜、大宗交易、两融、分红、基金、期货、期权、事件等公开数据结构，按领域拆分并限制单文件不超过 1000 行。
-- `Quotes.CN`、`Quotes.SimpleCN`、`Quotes.HK`、`Quotes.US`、`Quotes.Fund`、`Quotes.FundFlow`、`Quotes.PanelLargeOrder`、`Quotes.TodayTimeline`：腾讯行情、资金流、盘口大单占比和当日分时 provider/service/root 闭环。
-- `Quotes.Search`、`Quotes.TradingCalendar`：腾讯 Smartbox 搜索和 A 股交易日历基础能力。
-- `GenerateSearchExternalLinks`：按搜索结果生成东方财富、雪球外部财经链接。
-- `timeutil` 与根包时间工具：`MarketTZ`、`ParseMarketTime`、`BuildTimeMeta`、`BuildTimeMetaFromDateAndTime`、`FormatInTz`。
-- `utils` 与根包工具：`ChunkArray`、`AsyncPool`、周期/复权参数校验、`PeriodCode`/`GetPeriodCode`、`AdjustCode`/`GetAdjustCode`，对应 TS 版工具函数基础能力。
-- `parser` 与根包解析工具：`DecodeGBK`、`ParseResponse`、`SafeNumber`、`SafeNumberOrNil`、`SafeNumberOrNull`、`ToNumber`、`ToNumberSafe`。
-- 根包脚本响应解析工具：`ExtractJSONP`、`ExtractJsonFromJsonp`、`JSONPRequest`、`ExtractJSVar`、`ParseJSVars`、`FetchJSVars`，对应 TS 版 `core/jsonp.ts` 和 `core/jsVars.ts` 的 JSONP 请求、文本解包、JS 变量声明请求与解析能力。
-- `constants` 与根包常量：腾讯、东方财富、新浪 API URL、token、默认请求参数、期货/期权映射表，对应 TS 版 `core/constants.ts`。
-- `useragent` 与根包 User-Agent 池：`AllUserAgents`、`NextUserAgent`、`RandomUserAgent`、`WithNextUserAgent`、`WithRandomUserAgent`。
-- `RateLimiter` 与根包限流工具：`NewRateLimiter`、`RateLimiterOptions`，对应 TS 版 `core/rateLimiter.ts` 的令牌桶能力。
-- `CircuitBreaker` 与根包熔断工具：`NewCircuitBreaker`、`CircuitBreakerOptions`、`CircuitBreakerStats` 和状态常量，对应 TS 版 `core/circuitBreaker.ts` 的状态机能力。
-- `HostFallbackManager` 与根包 host fallback 工具：`NewHostFallbackManager`、`HostFallbackOptions`、`HostHealthStats`，对应 TS 版 `core/fallback.ts` 的备用 host 治理能力。
-- Provider 策略工具：`MergeProviderPolicy`、`ResolveProviderPolicy`、`InferProviderFromURL`，用于合并、解析和推断数据源级请求治理配置。
-- `Quotes.DividendDetail`：东方财富个股分红派送详情的兼容入口。
-- `Calendar.IsTradingDay`、`Calendar.NextTradingDay`、`Calendar.PrevTradingDay`、`Calendar.MarketStatus`：A 股交易日判断、前后交易日和市场时段状态辅助能力。
-- `Quotes.CodesCN`、`Quotes.CodesUS`、`Quotes.CodesHK`、`Quotes.CodesFund`：代码列表基础能力。
-- `Quotes.BatchCN`、`Quotes.BatchHK`、`Quotes.BatchUS`、`Quotes.AllCN`、`Quotes.AllHK`、`Quotes.AllUS`：按代码批量行情和全市场代码列表 + 批量行情组合入口，支持分块、并发和进度回调。
-- `Quotes.BatchRaw`：透传腾讯行情 raw query，并返回拆分后的原始字段。
-- `Kline.CN`、`Kline.CNMinute`：东方财富 A 股历史日/周/月 K 线，以及 1/5/15/30/60 分钟线基础能力。
-- `Kline.HK`、`Kline.US`、`Kline.HKMinute`、`Kline.USMinute`：东方财富港股、美股历史日/周/月 K 线，以及 1/5/15/30/60 分钟线基础能力。
-- K 线与板块选项别名：`HKKlineOptions`、`USKlineOptions`、`HKMinuteKlineOptions`、`USMinuteKlineOptions`、`IndustryBoardKlineOptions`、`ConceptBoardKlineOptions` 等，对齐 TS 顶层公开类型名。
-- `Indicator.KlineWithIndicators`：拉取足够历史 K 线并按需附加 MA、MACD、BOLL、RSI 等技术指标。
-- `Board.IndustryList`、`Board.ConceptList`、`Board.IndustrySpot`、`Board.ConceptSpot`、`Board.IndustryConstituents`、`Board.ConceptConstituents`、`Board.IndustryKline`、`Board.ConceptKline`、`Board.IndustryMinute`、`Board.ConceptMinute`：东方财富行业/概念板块列表、盘口指标、成分股、历史 K 线和分钟线基础能力。
-- `FundFlow.Individual`、`FundFlow.Market`、`FundFlow.Rank`、`FundFlow.SectorRank`、`FundFlow.SectorHistory`：东方财富个股、大盘和板块资金流基础能力。
-- `Northbound.Minute`、`Northbound.Summary`、`Northbound.HoldingRank`、`Northbound.History`、`Northbound.Individual`：东方财富沪深港通/北向资金分时、汇总、持股排行、历史和个股持仓基础能力。
-- `DragonTiger.Detail`、`DragonTiger.StockStats`、`DragonTiger.Institution`、`DragonTiger.BranchRank`、`DragonTiger.SeatDetail`：东方财富龙虎榜详情、个股统计、机构买卖、营业部排行和席位明细基础能力。
-- `BlockTrade.MarketStat`、`BlockTrade.Detail`、`BlockTrade.DailyStat`：东方财富大宗交易市场统计、成交明细和每日个股统计基础能力。
-- `Margin.AccountInfo`、`Margin.TargetList`：东方财富融资融券账户统计和标的明细基础能力。
-- `Dividend.Detail`：东方财富个股分红派送详情基础能力。
-- `Data.Search`、`Data.CodesCN`、`Data.CodesUS`、`Data.CodesHK`、`Data.CodesFund`、`Data.BlockTradeDetail`、`Data.MarginTargetList`、`Data.DividendDetail`：搜索、代码列表、大宗交易、融资融券和分红等数据类聚合入口。
-- `DatacenterQuery`、`DatacenterResult`、`ParseDCDate`：东方财富 datacenter-web 通用分页查询参数、结果模型和日期解析辅助能力。
-- `MarketEvent.ZTPool`、`MarketEvent.StockChanges`、`MarketEvent.BoardChanges`、`MarketEvent.THSLimitUpPool`：东方财富涨停股池、个股盘口异动、板块异动，以及同花顺当日/历史涨停池基础能力。
-- `Fund.Estimate`、`Fund.NavHistory`、`Fund.RankHistory`、`Fund.DividendList`：天天基金/东方财富基金当日实时估值、历史净值、同类排名走势和分红列表基础能力。
-- `Futures.Kline`、`Futures.GlobalSpot`、`Futures.GlobalKline`、`Futures.InventorySymbols`、`Futures.Inventory`、`Futures.ComexInventory`：东方财富国内期货历史 K 线、全球期货实时行情、全球期货历史 K 线、国内期货库存和 COMEX 黄金/白银库存基础能力。
-- 期货工具：`ExtractFuturesVariety`、`FuturesMarketCode`，对应 TS 版 Eastmoney 期货 K 线 provider 的品种提取和 market code 查找能力。
-- `Options.CFFEXQuotes`、`Options.LHB`、`Options.IndexOptionSpot`、`Options.IndexOptionKline`、`Options.CommodityOptionSpot`、`Options.CommodityOptionKline`、`Options.ETFOptionMonths`、`Options.ETFOptionExpireDay`、`Options.ETFOptionMinute`、`Options.ETFOptionDailyKline`、`Options.ETFOption5DayMinute`：东方财富中金所期权实时行情、期权龙虎榜和新浪股指/商品/ETF 期权基础能力。
-- `internal/`：请求治理、数据源 provider 和 service 编排目录。
-- `cmd/ceheng`、`apps/api`、`apps/web`：预留 CLI、后端 API 和 Web 前端入口。
+- 统一根入口：`stock.New()` 创建 `*stock.Client`，服务字段按领域组织。
+- Go 友好的命名空间 API：`client.Quotes`、`client.Kline`、`client.Board`、`client.MarketEvent` 等。
+- 兼容 TS 迁移习惯：保留大量 `Client.Get*` 薄委托和 TS 风格常量/类型别名。
+- 统一符号模型：A 股、港股、美股、基金、期货、板块代码归一化和数据源代码转换。
+- 行情数据：A 股、港股、美股、公募基金实时行情、代码列表、批量行情、分时、K 线。
+- 扩展数据：板块、资金流、北向资金、龙虎榜、大宗交易、融资融券、分红、基金、期货、期权、涨停池。
+- 技术分析：MA、MACD、BOLL、KDJ、RSI、WR、BIAS、CCI、ATR、OBV、ROC、DMI、SAR、KC。
+- 信号与策略：金叉/死叉、超买/超卖、BOLL 突破、SAR 反转、本地选股器和轻量回测。
+- 请求治理：timeout、retry、限流、熔断、host fallback、User-Agent 轮换、provider policy、请求 hooks。
+- 统一错误码：`INVALID_ARGUMENT`、`INVALID_SYMBOL`、`HTTP_ERROR`、`RATE_LIMITED`、`NETWORK_ERROR`、`TIMEOUT`、`ABORTED`、`PARSE_ERROR`、`UPSTREAM_ERROR`、`NOT_FOUND`。
+- 公开纯能力子包：`indicators`、`signals`、`symbols`、`screener`、`cache`、`errors`、`parser`、`utils` 等可独立使用。
 
-当前阶段聚焦 Go SDK 库；CLI、MCP、后端 API 和 Web 前端属于后续应用层。SDK v0.1 的收口边界见 `docs/sdk-v0.1-acceptance.md`。
+## 安装
 
-## 使用示例
+```bash
+go get github.com/ceheng.io/stock-go
+```
+
+```go
+import stock "github.com/ceheng.io/stock-go"
+```
+
+## 快速开始
 
 ```go
 package main
@@ -71,31 +45,297 @@ import (
 	"time"
 
 	stock "github.com/ceheng.io/stock-go"
-	"github.com/ceheng.io/stock-go/symbols"
 )
 
 func main() {
+	ctx := context.Background()
 	sdk := stock.New(stock.WithTimeout(10 * time.Second))
-	_ = sdk
 
-	symbol, err := symbols.Normalize("600519", nil)
+	quotes, err := sdk.Quotes.SimpleCN(ctx, []string{"sh000001", "sz000858", "sh600519"})
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(symbols.ToTencent(symbol))
-
-	quotes, err := sdk.Quotes.SimpleCN(context.Background(), []string{"sh600519"})
-	if err != nil {
-		panic(err)
+	for _, quote := range quotes {
+		fmt.Printf("%s: %.2f\n", quote.Name, quote.Price)
 	}
-	fmt.Println(quotes[0].Name, quotes[0].Price)
 }
+```
+
+## 常用示例
+
+### 符号归一化
+
+```go
+symbol, err := stock.NormalizeSymbol("600519", nil)
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(stock.ToTencentSymbol(symbol))    // sh600519
+fmt.Println(stock.ToEastmoneySecID(symbol))   // 1.600519
+fmt.Println(stock.ToEastmoneySecid(symbol))   // TS 风格别名
+```
+
+### 历史 K 线与技术指标
+
+```go
+rows, err := sdk.Kline.CN(ctx, "600519", stock.HistoryKlineOptions{
+	Period: stock.KlinePeriodDaily,
+	Adjust: stock.AdjustQFQ,
+	Limit:  120,
+})
+if err != nil {
+	panic(err)
+}
+
+withIndicators, err := sdk.Indicator.KlineWithIndicators(ctx, "600519", stock.KlineWithIndicatorsOptions{
+	Period: stock.KlinePeriodDaily,
+	Indicators: stock.IndicatorOptions{
+		MA:   &stock.MAOptions{Periods: []int{5, 10, 20}},
+		MACD: &stock.MACDOptions{},
+		RSI:  &stock.RSIOptions{Periods: []int{6, 12, 24}},
+	},
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(len(rows), len(withIndicators))
+```
+
+### 全市场批量行情
+
+```go
+all, err := sdk.Quotes.AllCN(ctx, stock.CodeListOptions{}, stock.BatchOptions{
+	Concurrency: 5,
+	OnProgress: func(done, total int) {
+		fmt.Printf("%d/%d\n", done, total)
+	},
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println("A 股数量:", len(all))
+```
+
+也可以使用根包兼容入口：
+
+```go
+all, err := sdk.GetAllAShareQuotes(ctx, stock.GetAllAShareQuotesOptions{
+	Concurrency: 5,
+})
+```
+
+### 同花顺涨停池
+
+```go
+// 当日涨停池：Date 留空，按同花顺默认交易日查询。
+today, err := sdk.MarketEvent.THSLimitUpPool(ctx, stock.THSLimitUpPoolOptions{
+	Limit: 50,
+})
+if err != nil {
+	panic(err)
+}
+fmt.Println(today.Date, today.Page.Total)
+
+// 历史涨停池：支持 YYYY-MM-DD 或 YYYYMMDD。
+history, err := sdk.GetTHSLimitUpPool(ctx, stock.THSLimitUpPoolOptions{
+	Date:       "2025-06-13",
+	Page:       1,
+	Limit:      20,
+	OrderField: stock.THSLimitUpOrderLastLimitUpTime,
+	OrderType:  stock.THSLimitUpOrderDesc,
+})
+if err != nil {
+	panic(err)
+}
+
+for _, item := range history.Items {
+	fmt.Printf("%s %s %s %s\n", item.Code, item.Name, item.LimitUpType, item.LastLimitUpTimeText)
+}
+```
+
+默认参数：
+
+- `Date=""`：查询同花顺默认交易日。
+- `Page=1`、`Limit=50`。
+- `Filter="HS,GEM2STAR"`。
+- `OrderField=THSLimitUpOrderLastLimitUpTime`。
+- `OrderType=THSLimitUpOrderDesc`。
+
+同花顺接口有反爬限制，SDK 已为 `ProviderTHS` 配置浏览器式默认 `User-Agent`、`Referer` 和 `Cookie`；如上游策略变化，可通过 `WithProviderPolicy(stock.ProviderTHS, ...)` 覆盖。
+
+### 资金流、北向、龙虎榜
+
+```go
+fundFlow, err := sdk.FundFlow.Individual(ctx, "600519", stock.FundFlowOptions{})
+northbound, err := sdk.Northbound.HoldingRank(ctx, stock.NorthboundHoldingRankOptions{
+	Market: stock.NorthboundMarketAll,
+	Period: stock.NorthboundRankToday,
+})
+dragonTiger, err := sdk.DragonTiger.Detail(ctx, stock.DragonTigerDateOptions{
+	StartDate: "2025-06-13",
+	EndDate:   "2025-06-13",
+})
+
+_, _, _, _ = fundFlow, northbound, dragonTiger, err
+```
+
+### 期货和期权
+
+```go
+futures, err := sdk.Futures.Kline(ctx, "rb2605", stock.FuturesKlineOptions{
+	Period: stock.KlinePeriodDaily,
+	Limit:  120,
+})
+if err != nil {
+	panic(err)
+}
+
+etfMinute, err := sdk.Options.ETFOptionMinute(ctx, "10009633")
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(len(futures), len(etfMinute))
+```
+
+### 纯计算子包
+
+```go
+import (
+	stock "github.com/ceheng.io/stock-go"
+	"github.com/ceheng.io/stock-go/indicators"
+	"github.com/ceheng.io/stock-go/screener"
+	"github.com/ceheng.io/stock-go/signals"
+)
+
+macd := indicators.CalcMACD(closes, indicators.MACDOptions{})
+signalRows, err := signals.CalcSignals(signalKlines, signals.SignalOptions{
+	MA: &signals.MAOptions{Fast: 5, Slow: 20},
+})
+picks, err := screener.Screen(quotes).
+	Where(func(q stock.FullQuote) bool { return q.ChangePercent > 3 }).
+	Top(20)
+
+_, _, _, _ = macd, signalRows, picks, err
+```
+
+## 请求治理与错误处理
+
+```go
+sdk := stock.New(
+	stock.WithTimeout(12*time.Second),
+	stock.WithRetry(stock.RetryOptions{
+		MaxRetries: 2,
+		BaseDelay: 500 * time.Millisecond,
+	}),
+	stock.WithProviderPolicy(stock.ProviderEastmoney, stock.ProviderPolicy{
+		Timeout: 15 * time.Second,
+		RateLimit: &stock.RateLimitOptions{
+			RequestsPerSecond: 3,
+			MaxBurst:          3,
+		},
+	}),
+)
+
+_, err := sdk.Quotes.SimpleCN(context.Background(), []string{"bad"})
+if err != nil {
+	fmt.Println(stock.GetErrorCode(err))
+	if stock.IsSdkError(err) {
+		fmt.Println("structured sdk error")
+	}
+}
+```
+
+## API 概览
+
+| 服务字段 | 代表能力 |
+| --- | --- |
+| `client.Quotes` | A/HK/US/基金行情、资金流、盘口大单、搜索、交易日历、代码列表、批量行情 |
+| `client.Kline` | A/HK/US 历史 K 线和分钟 K 线 |
+| `client.Indicator` | K 线 + 技术指标 |
+| `client.Board` | 行业/概念板块列表、盘口、成分股、K 线、分钟线 |
+| `client.FundFlow` | 个股、大盘、排行、板块资金流 |
+| `client.Northbound` | 北向/南向分时、汇总、持股排行、历史和个股持仓 |
+| `client.MarketEvent` | 东方财富涨停池、盘口异动、板块异动、同花顺涨停池 |
+| `client.DragonTiger` | 龙虎榜详情、个股统计、机构买卖、营业部排行、席位明细 |
+| `client.BlockTrade` | 大宗交易市场统计、成交明细、每日个股统计 |
+| `client.Margin` | 融资融券账户统计和标的明细 |
+| `client.Dividend` | 个股分红派送详情 |
+| `client.Fund` | 基金估值、历史净值、排名走势、基金分红 |
+| `client.Futures` | 国内/全球期货 K 线、全球期货现货、库存、COMEX 库存 |
+| `client.Options` | 中金所期权、ETF 期权、股指期权、商品期权、期权龙虎榜 |
+| `client.Calendar` | 交易日判断、前后交易日、市场状态 |
+| `client.Data` | 搜索、代码列表、大宗交易、融资融券、分红等聚合入口 |
+
+常用根包兼容入口包括：
+
+```go
+client.GetSimpleQuotes(ctx, []string{"sh600519"})
+client.GetHistoryKline(ctx, "600519", stock.HistoryKlineOptions{})
+client.GetKlineWithIndicators(ctx, "600519", stock.KlineWithIndicatorsOptions{})
+client.GetZTPool(ctx, stock.ZTPoolZT, "2025-06-13")
+client.GetTHSLimitUpPool(ctx, stock.THSLimitUpPoolOptions{Date: "2025-06-13"})
+client.GetDragonTigerDetail(ctx, stock.DragonTigerDateOptions{StartDate: "20250613", EndDate: "20250613"})
+```
+
+完整公开 API 映射见 [docs/api-matrix.md](docs/api-matrix.md)。
+
+## 市场支持矩阵
+
+| 能力 | A 股 | 港股 | 美股 | 公募基金 | 期货 | 期权 |
+| --- | :---: | :---: | :---: | :---: | :---: | :---: |
+| 实时行情 | 支持 | 支持 | 支持 | 支持 | 全球期货 | ETF / 中金所 / 商品 |
+| 历史 K 线（日/周/月） | 支持 | 支持 | 支持 | 场内 ETF/LOF | 国内 + 全球 | 支持 |
+| 分钟 K 线 | 1/5/15/30/60 | 1/5/15/30/60 | 1/5/15/30/60 | 场内 ETF/LOF | 暂无 | ETF 期权 |
+| 当日分时 | 支持 | period=1 | period=1 | 场内 ETF/LOF | 暂无 | ETF 期权 |
+| 资金流向 | 个股/大盘/排行/板块 | 暂无 | 暂无 | 不适用 | 不适用 | 不适用 |
+| 板块（行业/概念） | 支持 | 暂无 | 暂无 | 暂无 | 不适用 | 不适用 |
+| 龙虎榜 | 支持 | 不适用 | 不适用 | 不适用 | 不适用 | 期权龙虎榜 |
+| 北向/南向资金 | 北向 | 南向 | 不适用 | 不适用 | 不适用 | 不适用 |
+| 大宗交易 / 融资融券 | 支持 | 暂无 | 暂无 | 不适用 | 不适用 | 不适用 |
+| 涨停池 / 盘口异动 | 东方财富 + 同花顺 | 不适用 | 不适用 | 不适用 | 不适用 | 不适用 |
+| 全市场代码列表 / 批量行情 | 支持 | 支持 | 支持 | 支持 | 暂无 | 暂无 |
+| 库存数据 | 不适用 | 不适用 | 不适用 | 不适用 | 国内 + COMEX | 不适用 |
+| 交易日历 | 支持 | 市场状态 | 市场状态 | 不适用 | 不适用 | 不适用 |
+
+> 数据来自腾讯财经、东方财富、新浪财经、同花顺等公开接口，通常有延迟，不适合高频交易决策。
+
+## 目录结构
+
+```text
+stock-go/
+├── stock.go              # 根 Client 与服务组合
+├── options.go            # 请求、治理和 provider 配置
+├── types/                # 公开领域类型
+├── indicators/           # 技术指标
+├── symbols/              # 符号归一化
+├── signals/              # 指标信号
+├── screener/             # 本地选股和回测
+├── cache/                # 缓存能力
+├── internal/
+│   ├── core/             # HTTP、重试、限流、熔断、fallback、解析
+│   ├── providers/        # tencent / eastmoney / sina / ths
+│   └── services/         # 业务领域编排
+├── cmd/ceheng/           # 后续 CLI 入口
+├── apps/api/             # 后续 API 服务
+├── apps/web/             # 后续 Web 前端
+└── docs/
 ```
 
 ## 开发验证
 
 ```bash
 go test ./...
+go test ./types -run 'Test(TypesFilesStaySmall|DomainTypesStayInDomainFiles)' -count=1
+```
+
+真实网络集成测试默认跳过，可按需开启：
+
+```bash
+CEHENG_INTEGRATION=1 go test ./internal/providers/ths -run TestGetLimitUpPoolIntegration -count=1
 ```
 
 `apps/web` 作为后续前端应用目录有独立 `go.mod` 边界，用于避免根模块的 `go list ./...` 穿透 `node_modules` 中的第三方 Go 包。
