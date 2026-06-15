@@ -8,7 +8,7 @@
       <a-space>
         <a-segmented v-model:value="activeRankView" :options="rankViewOptions" />
         <a-segmented v-if="activeRankView !== 'limitUp'" v-model:value="rankType" :options="rankOptions" />
-        <a-button :loading="loading" @click="load">刷新</a-button>
+        <a-button :loading="activeLoading" @click="load">刷新</a-button>
       </a-space>
     </div>
 
@@ -28,7 +28,7 @@
         :columns="limitUpColumns"
         :data-source="limitUpPool"
         :pagination="{ pageSize: 15 }"
-        :loading="loading && limitUpPool.length === 0"
+        :loading="limitUpLoading && limitUpPool.length === 0"
         size="small"
         row-key="code"
         :custom-row="stockRowTo"
@@ -75,7 +75,7 @@
         :columns="columns"
         :data-source="activeBoardRows"
         :pagination="{ pageSize: 20 }"
-        :loading="loading && activeBoardRows.length === 0"
+        :loading="boardLoading && activeBoardRows.length === 0"
         size="small"
         row-key="code"
         :custom-row="rowTo(activeRankView)"
@@ -139,7 +139,8 @@ const rankType = ref<BoardRankingType>('rise')
 const industry = ref<Board[]>([])
 const concept = ref<Board[]>([])
 const limitUpPool = ref<ZTPoolItem[]>([])
-const loading = ref(false)
+const boardLoading = ref(false)
+const limitUpLoading = ref(false)
 const errorMessage = ref('')
 const rankViewOptions = [
   { label: '涨停板', value: 'limitUp' },
@@ -165,19 +166,20 @@ const columns = [
 
 const limitUpColumns = [
   { title: '排名', key: 'rank', width: 66 },
-  { title: '股票', key: 'name', width: 140 },
-  { title: '涨幅', key: 'changePercent', width: 90 },
-  { title: '连板', key: 'continuousBoardCount', width: 86 },
-  { title: '封板时间', key: 'boardTime', width: 120 },
-  { title: '行业', key: 'industry', width: 120 },
-  { title: '统计', key: 'ztStatistics', width: 90 },
-  { title: '成交额', key: 'amount', width: 100 },
-  { title: '换手', key: 'turnoverRate', width: 80 },
+  { title: '股票', key: 'name', width: 140, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.name, b.name) },
+  { title: '涨幅', key: 'changePercent', width: 90, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareNumber(a.changePercent, b.changePercent) },
+  { title: '连板', key: 'continuousBoardCount', width: 86, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareNumber(a.continuousBoardCount, b.continuousBoardCount) },
+  { title: '封板时间', key: 'boardTime', width: 120, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.firstBoardTime, b.firstBoardTime) },
+  { title: '行业', key: 'industry', width: 120, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.industry, b.industry) },
+  { title: '统计', key: 'ztStatistics', width: 90, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.ztStatistics, b.ztStatistics) },
+  { title: '成交额', key: 'amount', width: 100, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareNumber(a.amount, b.amount) },
+  { title: '换手', key: 'turnoverRate', width: 80, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareNumber(a.turnoverRate, b.turnoverRate) },
 ]
 
 const sortedIndustry = computed(() => sortBoardRankings(industry.value, rankType.value, 50))
 const sortedConcept = computed(() => sortBoardRankings(concept.value, rankType.value, 50))
 const activeBoardRows = computed(() => activeRankView.value === 'industry' ? sortedIndustry.value : sortedConcept.value)
+const activeLoading = computed(() => activeRankView.value === 'limitUp' ? limitUpLoading.value : boardLoading.value)
 const maxContinuousBoards = computed(() => {
   return Math.max(0, ...limitUpPool.value.map((item) => Number(item.continuousBoardCount || 0)))
 })
@@ -193,17 +195,8 @@ const totalSealAmount = computed(() => {
 })
 
 async function load() {
-  loading.value = true
   errorMessage.value = ''
-  const results = await Promise.allSettled([
-    getIndustryList(),
-    getConceptList(),
-    getZTPool(),
-  ])
-  const [industryResult, conceptResult, limitUpResult] = results
-  if (industryResult.status === 'fulfilled') industry.value = industryResult.value
-  if (conceptResult.status === 'fulfilled') concept.value = conceptResult.value
-  if (limitUpResult.status === 'fulfilled') limitUpPool.value = limitUpResult.value
+  const results = await Promise.allSettled([loadBoards(), loadLimitUpPool()])
 
   const failed = results.filter((result) => result.status === 'rejected')
   if (failed.length > 0) {
@@ -214,7 +207,47 @@ async function load() {
       ? '榜单数据加载失败，请稍后刷新'
       : '榜单数据部分加载失败，请稍后刷新'
   }
-  loading.value = false
+}
+
+async function loadBoards() {
+  boardLoading.value = true
+  try {
+    const results = await Promise.allSettled([
+      getIndustryList(),
+      getConceptList(),
+    ])
+    const [industryResult, conceptResult] = results
+    if (industryResult.status === 'fulfilled') industry.value = industryResult.value
+    if (conceptResult.status === 'fulfilled') concept.value = conceptResult.value
+
+    const failed = results.filter((result) => result.status === 'rejected')
+    if (failed.length > 0) {
+      throw new AggregateError(failed.map((result) => result.status === 'rejected' ? result.reason : undefined), 'board rankings failed')
+    }
+  } finally {
+    boardLoading.value = false
+  }
+}
+
+async function loadLimitUpPool() {
+  limitUpLoading.value = true
+  try {
+    limitUpPool.value = await getZTPool()
+  } finally {
+    limitUpLoading.value = false
+  }
+}
+
+function compareNumber(left: number | null | undefined, right: number | null | undefined) {
+  return finiteNumber(left) - finiteNumber(right)
+}
+
+function compareText(left: string | null | undefined, right: string | null | undefined) {
+  return String(left || '').localeCompare(String(right || ''), 'zh-Hans-CN')
+}
+
+function finiteNumber(value: number | null | undefined) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0
 }
 
 function rowTo(type: 'industry' | 'concept') {

@@ -49,6 +49,16 @@ function limitUpItem(partial: Partial<ZTPoolItem> = {}): ZTPoolItem {
   }
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((innerResolve, innerReject) => {
+    resolve = innerResolve
+    reject = innerReject
+  })
+  return { promise, resolve, reject }
+}
+
 describe('ranking helpers', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -224,5 +234,103 @@ describe('ranking helpers', () => {
 
     expect(wrapper.text()).toContain('成飞集成')
     expect(wrapper.text()).toContain('榜单数据部分加载失败，请稍后刷新')
+  })
+
+  it('does not keep the limit-up table loading while board rankings are still pending', async () => {
+    const industryRequest = deferred<Board[]>()
+    const conceptRequest = deferred<Board[]>()
+    apiMocks.getIndustryList.mockReturnValue(industryRequest.promise)
+    apiMocks.getConceptList.mockReturnValue(conceptRequest.promise)
+    apiMocks.getZTPool.mockResolvedValue([limitUpItem({ code: '000001', name: '平安银行' })])
+
+    const tableStub = defineComponent({
+      name: 'ATable',
+      props: {
+        dataSource: { type: Array, default: () => [] },
+        loading: { type: Boolean, default: false },
+      },
+      template: '<div />',
+    })
+
+    const wrapper = mount(Rankings, {
+      global: {
+        stubs: {
+          AAlert: true,
+          AButton: true,
+          ACard: {
+            props: { title: { type: String, default: '' } },
+            template: '<section><h2>{{ title }}</h2><slot /></section>',
+          },
+          ASpace: { template: '<div><slot /></div>' },
+          ASegmented: true,
+          AStatistic: true,
+          ATable: tableStub,
+          ATag: true,
+        },
+      },
+    })
+    await flushPromises()
+    await nextTick()
+
+    const table = wrapper.findComponent(tableStub)
+    expect(table.props('dataSource')).toHaveLength(1)
+    expect(table.props('loading')).toBe(false)
+
+    industryRequest.resolve([])
+    conceptRequest.resolve([])
+    await flushPromises()
+    await nextTick()
+  })
+
+  it('adds sortable columns to the limit-up table fields', async () => {
+    const rows = [
+      limitUpItem({ code: '000001', name: '平安银行', amount: 200, continuousBoardCount: 1, firstBoardTime: '09:45:00', industry: '银行' }),
+      limitUpItem({ code: '000002', name: '万科A', amount: 300, continuousBoardCount: 3, firstBoardTime: '09:31:00', industry: '地产' }),
+      limitUpItem({ code: '000003', name: '中信证券', amount: 100, continuousBoardCount: 2, firstBoardTime: '10:02:00', industry: '证券' }),
+    ]
+    apiMocks.getZTPool.mockResolvedValue(rows)
+
+    const tableStub = defineComponent({
+      name: 'ATable',
+      props: {
+        columns: { type: Array, default: () => [] },
+      },
+      template: '<div />',
+    })
+
+    const wrapper = mount(Rankings, {
+      global: {
+        stubs: {
+          AAlert: true,
+          AButton: true,
+          ACard: {
+            props: { title: { type: String, default: '' } },
+            template: '<section><h2>{{ title }}</h2><slot /></section>',
+          },
+          ASpace: { template: '<div><slot /></div>' },
+          ASegmented: true,
+          AStatistic: true,
+          ATable: tableStub,
+          ATag: true,
+        },
+      },
+    })
+    await flushPromises()
+    await nextTick()
+
+    const columns = wrapper.findComponent(tableStub).props('columns') as Array<{ key: string; sorter?: (left: ZTPoolItem, right: ZTPoolItem) => number }>
+    const amountSorter = columns.find((column) => column.key === 'amount')?.sorter
+    const boardCountSorter = columns.find((column) => column.key === 'continuousBoardCount')?.sorter
+    const boardTimeSorter = columns.find((column) => column.key === 'boardTime')?.sorter
+    const industrySorter = columns.find((column) => column.key === 'industry')?.sorter
+
+    expect(amountSorter).toEqual(expect.any(Function))
+    expect(boardCountSorter).toEqual(expect.any(Function))
+    expect(boardTimeSorter).toEqual(expect.any(Function))
+    expect(industrySorter).toEqual(expect.any(Function))
+    expect([...rows].sort(amountSorter).map((item) => item.code)).toEqual(['000003', '000001', '000002'])
+    expect([...rows].sort(boardCountSorter).map((item) => item.code)).toEqual(['000001', '000003', '000002'])
+    expect([...rows].sort(boardTimeSorter).map((item) => item.code)).toEqual(['000002', '000001', '000003'])
+    expect([...rows].sort(industrySorter).map((item) => item.code)).toEqual(['000002', '000001', '000003'])
   })
 })
