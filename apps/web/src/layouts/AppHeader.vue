@@ -48,10 +48,10 @@
         <BulbOutlined v-if="themeMode === 'dark'" />
         <EyeInvisibleOutlined v-else />
       </a-button>
-      <a href="https://stock-sdk.linkdiary.cn/" target="_blank" rel="noopener noreferrer" title="Stock SDK">
+      <a href="https://github.com/ceheng-io/stock-go" target="_blank" rel="noopener noreferrer" title="stock-go">
         <DatabaseOutlined />
       </a>
-      <a href="https://github.com/chengzuopeng/stock-dashboard" target="_blank" rel="noopener noreferrer" title="GitHub">
+      <a href="https://github.com/ceheng-io/stock-go" target="_blank" rel="noopener noreferrer" title="GitHub">
         <GithubOutlined />
       </a>
     </a-space>

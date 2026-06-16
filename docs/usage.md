@@ -51,9 +51,9 @@ SDK 同时提供两类入口：
 | 入口 | 示例 | 推荐场景 |
 | --- | --- | --- |
 | 服务字段 | `sdk.Quotes.SimpleCN(ctx, codes)` | 新 Go 项目，命名清晰，按领域浏览能力 |
-| TS 兼容薄委托 | `sdk.GetSimpleQuotes(ctx, codes)` | 从 TypeScript 版迁移，或希望沿用扁平方法名 |
+| 便捷薄委托 | `sdk.GetSimpleQuotes(ctx, codes)` | 希望沿用扁平方法名或减少服务字段层级 |
 
-两类入口最终调用同一套服务实现。新代码优先使用服务字段；迁移代码可先使用 `Get*` 方法减少改动，再逐步切换。
+两类入口最终调用同一套服务实现。新代码优先使用服务字段；偏好扁平方法名时可直接使用 `Get*` 方法。
 
 常用服务字段：
 
@@ -76,7 +76,7 @@ SDK 同时提供两类入口：
 | `Calendar` | 交易日判断、前后交易日、市场状态 |
 | `Data` | 搜索、代码列表、大宗交易、融资融券、分红等聚合入口 |
 
-完整 TypeScript 到 Go 的公开 API 映射见 [api-matrix.md](api-matrix.md)。
+完整公开 API 速查见 [api-matrix.md](api-matrix.md)。
 
 ## Client 配置
 
@@ -290,7 +290,7 @@ quotes, err := sdk.Quotes.BatchCN(ctx, []string{"600519", "000858", "300750"}, s
 })
 ```
 
-TS 兼容入口会把代码列表选项和批量选项合并到一个结构体里：
+根包便捷入口会把代码列表选项和批量选项合并到一个结构体里：
 
 ```go
 quotes, err := sdk.GetAllAShareQuotes(ctx, stock.GetAllAShareQuotesOptions{
@@ -885,7 +885,7 @@ if stock.IsSdkError(err) {
 }
 ```
 
-根包同时保留 Go initialism 风格和 TS 迁移风格命名，例如 `IsSDKError` / `IsSdkError`、`GetSDKErrorCode` / `GetSdkErrorCode`。
+根包同时保留 Go initialism 风格和常用兼容命名，例如 `IsSDKError` / `IsSdkError`、`GetSDKErrorCode` / `GetSdkErrorCode`。
 
 ## 请求观测
 
@@ -947,5 +947,5 @@ CEHENG_INTEGRATION=1 go test ./internal/providers/ths -run TestGetLimitUpPoolInt
 ## 进一步阅读
 
 - [README](../README.md)：项目概览、能力矩阵和快速示例。
-- [公开 API 迁移矩阵](api-matrix.md)：TypeScript 版到 Go 版的公开 API 映射。
+- [公开 API 速查](api-matrix.md)：根包、服务字段和子包能力索引。
 - [SDK v0.1 验收文档](sdk-v0.1-acceptance.md)：当前阶段收口边界和验收项。

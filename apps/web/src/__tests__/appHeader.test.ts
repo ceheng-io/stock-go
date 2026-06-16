@@ -169,11 +169,11 @@ describe('AppHeader', () => {
     expect(localStorage.getItem('search.recent')).toBeNull()
   })
 
-  it('renders SDK GitHub links and toggles theme mode', async () => {
+  it('renders stock-go GitHub links and toggles theme mode', async () => {
     const wrapper = mountHeader()
 
-    expect(wrapper.get('a[href="https://stock-sdk.linkdiary.cn/"]').attributes('target')).toBe('_blank')
-    expect(wrapper.get('a[href="https://github.com/chengzuopeng/stock-dashboard"]').attributes('target')).toBe('_blank')
+    expect(wrapper.findAll('a[href="https://github.com/ceheng-io/stock-go"]')).toHaveLength(2)
+    expect(wrapper.findAll('a[href="https://github.com/ceheng-io/stock-go"]').every((link) => link.attributes('target') === '_blank')).toBe(true)
 
     await wrapper.get('.theme-toggle').trigger('click')
 

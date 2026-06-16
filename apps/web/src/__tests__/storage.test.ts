@@ -102,7 +102,7 @@ describe('storage service', () => {
     expect(settings.indicatorConfig.kc).toEqual({ emaPeriod: 20, atrPeriod: 10, multiplier: 2 })
   })
 
-  it('treats zero refresh interval as the old dashboard default interval', () => {
+  it('treats zero refresh interval as the default list interval', () => {
     updateSettings({ refreshInterval: { list: 0 } })
 
     expect(getSettings().refreshInterval.list).toBe(0)
@@ -111,7 +111,7 @@ describe('storage service', () => {
     expect(getRefreshInterval('heatmap')).toBe(10000)
   })
 
-  it('loads legacy heatmap and indicator config keys from the old dashboard', () => {
+  it('loads existing heatmap and indicator config keys', () => {
     localStorage.setItem('ui.heatmapConfig', JSON.stringify({
       dimension: 'watchlist',
       colorMode: 'green-rise',

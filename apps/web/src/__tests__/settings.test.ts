@@ -68,14 +68,14 @@ describe('Settings page', () => {
     localStorage.clear()
   })
 
-  it('keeps the old dashboard label for zero list refresh interval', () => {
+  it('keeps the default label for zero list refresh interval', () => {
     const wrapper = mountSettings()
 
     expect(wrapper.text()).toContain('默认')
     expect(wrapper.text()).not.toContain('手动刷新')
   })
 
-  it('shows migrated data source and unit notes from the old dashboard', () => {
+  it('shows data source and unit notes', () => {
     const wrapper = mountSettings()
     const text = wrapper.text()
 

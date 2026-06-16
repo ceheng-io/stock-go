@@ -59,7 +59,7 @@ type SymbolRef struct {
 //
 // Normalize accepts string values and SymbolRef values; keeping this as an
 // alias of any avoids narrowing the existing Go API while retaining the
-// migration-friendly public name.
+// broad public input name.
 type SymbolInput = any
 
 // Hint provides optional parse hints for string inputs.

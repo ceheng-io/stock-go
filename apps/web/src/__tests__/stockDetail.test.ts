@@ -89,7 +89,7 @@ describe('StockDetail page', () => {
     localStorage.clear()
   })
 
-  it('exposes near limit-up and limit-down alert types from the migrated detail page', () => {
+  it('exposes near limit-up and limit-down alert types from the detail page', () => {
     const wrapper = mountStockDetail()
 
     expect(wrapper.text()).toContain('接近涨停')

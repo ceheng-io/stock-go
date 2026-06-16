@@ -1,6 +1,6 @@
 # 策衡 stock-go
 
-`stock-go` 是“策衡”的 Go 版本股票行情 SDK，迁移自 TypeScript 项目 `/Users/xingyys/project/html/stock-sdk`。
+`stock-go` 是“策衡”的 Go 版本股票行情 SDK。代码仓库：[ceheng-io/stock-go](https://github.com/ceheng-io/stock-go)。
 
 它面向 Go 服务端、命令行工具、数据任务和后续 Web/API 应用，提供 A 股、港股、美股、公募基金、期货、期权、资金流、北向资金、龙虎榜、大宗交易、融资融券、涨停池等公开行情数据能力。
 
@@ -14,7 +14,7 @@ module github.com/ceheng.io/stock-go
 
 - 统一根入口：`stock.New()` 创建 `*stock.Client`，服务字段按领域组织。
 - Go 友好的命名空间 API：`client.Quotes`、`client.Kline`、`client.Board`、`client.MarketEvent` 等。
-- 兼容 TS 迁移习惯：保留大量 `Client.Get*` 薄委托和 TS 风格常量/类型别名。
+- 便捷入口：保留大量 `Client.Get*` 薄委托和常用常量/类型别名。
 - 统一符号模型：A 股、港股、美股、基金、期货、板块代码归一化和数据源代码转换。
 - 行情数据：A 股、港股、美股、公募基金实时行情、代码列表、批量行情、分时、K 线。
 - 扩展数据：板块、资金流、北向资金、龙虎榜、大宗交易、融资融券、分红、基金、期货、期权、涨停池。
@@ -75,7 +75,7 @@ if err != nil {
 
 fmt.Println(stock.ToTencentSymbol(symbol))    // sh600519
 fmt.Println(stock.ToEastmoneySecID(symbol))   // 1.600519
-fmt.Println(stock.ToEastmoneySecid(symbol))   // TS 风格别名
+fmt.Println(stock.ToEastmoneySecid(symbol))   // 兼容别名
 ```
 
 ### 历史 K 线与技术指标
@@ -274,7 +274,7 @@ if err != nil {
 | `client.Calendar` | 交易日判断、前后交易日、市场状态 |
 | `client.Data` | 搜索、代码列表、大宗交易、融资融券、分红等聚合入口 |
 
-常用根包兼容入口包括：
+常用根包便捷入口包括：
 
 ```go
 client.GetSimpleQuotes(ctx, []string{"sh600519"})
@@ -285,7 +285,7 @@ client.GetTHSLimitUpPool(ctx, stock.THSLimitUpPoolOptions{Date: "2025-06-13"})
 client.GetDragonTigerDetail(ctx, stock.DragonTigerDateOptions{StartDate: "20250613", EndDate: "20250613"})
 ```
 
-完整公开 API 映射见 [docs/api-matrix.md](docs/api-matrix.md)。
+完整公开 API 速查见 [docs/api-matrix.md](docs/api-matrix.md)。
 
 ## 市场支持矩阵
 
