@@ -1,11 +1,14 @@
 {
+  "always-update": true,
   "packages": {
     ".": {
       "release-type": "go",
       "package-name": "github.com/ceheng.io/stock-go",
       "changelog-path": "CHANGELOG.md",
       "include-component-in-tag": false,
-      "include-v-in-tag": true
+      "include-v-in-tag": true,
+      "include-v-in-release-name": true,
+      "pull-request-title-pattern": "chore${scope}: release v${version}"
     }
   }
 }
