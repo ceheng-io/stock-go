@@ -151,7 +151,7 @@ describe('api client', () => {
     ])
   })
 
-  it('normalizes Tonghuashun limit-up pool payloads into rows with reasons', async () => {
+  it('normalizes Tonghuashun limit-up pool payloads into rows with reasons and board counts', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -165,8 +165,8 @@ describe('api client', () => {
             LastLimitUpTimeText: '14:56:00',
             OrderAmount: 420000000,
             TurnoverRate: 8.32,
-            HighDays: '2天2板',
-            HighDaysValue: 2,
+            HighDays: '首板',
+            HighDaysValue: 65537,
             ReasonType: '低空经济',
             LimitUpType: '换手板',
           },
@@ -181,6 +181,8 @@ describe('api client', () => {
         name: '成飞集成',
         industry: '',
         reasonType: '低空经济',
+        continuousBoardCount: 1,
+        ztStatistics: '首板',
         limitUpType: '换手板',
       }),
     ])

@@ -280,7 +280,7 @@ function normalizeZTPoolItem(row: unknown): ZTPoolItem {
     floatMarketValue: numberValue(item.floatMarketValue ?? item.currencyValue),
     totalMarketValue: numberValue(item.totalMarketValue),
     turnoverRate: numberValue(item.turnoverRate),
-    continuousBoardCount: numberValue(item.continuousBoardCount ?? item.highDaysValue),
+    continuousBoardCount: boardCountValue(item),
     firstBoardTime: stringValue(item.firstBoardTime ?? item.firstLimitUpTimeText),
     lastBoardTime: stringValue(item.lastBoardTime ?? item.lastLimitUpTimeText),
     boardAmount: numberValue(item.boardAmount),
@@ -301,6 +301,27 @@ function stringValue(value: unknown): string {
 
 function numberValue(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function boardCountValue(item: Record<string, unknown>): number | null {
+  const continuousBoardCount = numberValue(item.continuousBoardCount)
+  if (continuousBoardCount !== null) return continuousBoardCount
+
+  const highDaysCount = boardCountFromText(item.highDays)
+  if (highDaysCount !== null) return highDaysCount
+
+  const highDaysValue = numberValue(item.highDaysValue)
+  return highDaysValue !== null && highDaysValue > 0 && highDaysValue < 100 ? highDaysValue : null
+}
+
+function boardCountFromText(value: unknown): number | null {
+  if (typeof value !== 'string') return null
+  if (value.includes('首板')) return 1
+
+  const matches = Array.from(value.matchAll(/(\d+(?:\.\d+)?)\s*板/g))
+  if (matches.length === 0) return null
+  const count = Number(matches[matches.length - 1][1])
+  return Number.isFinite(count) ? count : null
 }
 
 export function getStockChanges(type = 'large_buy') {

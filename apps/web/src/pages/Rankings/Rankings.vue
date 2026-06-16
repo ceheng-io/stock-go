@@ -20,7 +20,6 @@
       </template>
       <div class="limit-up-summary">
         <a-statistic title="涨停家数" :value="limitUpPool.length" suffix="只" />
-        <a-statistic title="最高连板" :value="maxContinuousBoards" suffix="板" />
         <a-statistic title="最早封板" :value="earliestFirstBoardTime" />
         <a-statistic title="封单金额" :value="formatYuanAmount(totalSealAmount)" />
       </div>
@@ -45,10 +44,6 @@
             <span :class="getChangeColorClass(record.changePercent)">
               {{ formatPercent(record.changePercent) }}
             </span>
-          </template>
-          <template v-else-if="column.key === 'continuousBoardCount'">
-            <a-tag v-if="record.continuousBoardCount" color="red">{{ formatBoardCount(record.continuousBoardCount) }}</a-tag>
-            <span v-else>--</span>
           </template>
           <template v-else-if="column.key === 'boardTime'">
             <div>{{ record.firstBoardTime || '--' }}</div>
@@ -172,11 +167,10 @@ const limitUpColumns = [
   { title: '排名', key: 'rank', width: 66 },
   { title: '股票', key: 'name', width: 140, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.name, b.name) },
   { title: '涨幅', key: 'changePercent', width: 90, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareNumber(a.changePercent, b.changePercent) },
-  { title: '连板', key: 'continuousBoardCount', width: 86, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareNumber(a.continuousBoardCount, b.continuousBoardCount) },
+  { title: '统计', key: 'ztStatistics', width: 90, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.ztStatistics, b.ztStatistics) },
   { title: '封板时间', key: 'boardTime', width: 120, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.firstBoardTime, b.firstBoardTime) },
   { title: '行业', key: 'industry', width: 120, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.industry, b.industry) },
   { title: '涨停原因', key: 'reasonType', width: 150, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.reasonType, b.reasonType) },
-  { title: '统计', key: 'ztStatistics', width: 90, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.ztStatistics, b.ztStatistics) },
   { title: '成交额', key: 'amount', width: 100, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareNumber(a.amount, b.amount) },
   { title: '换手', key: 'turnoverRate', width: 80, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareNumber(a.turnoverRate, b.turnoverRate) },
 ]
@@ -185,9 +179,6 @@ const sortedIndustry = computed(() => sortBoardRankings(industry.value, rankType
 const sortedConcept = computed(() => sortBoardRankings(concept.value, rankType.value, 50))
 const activeBoardRows = computed(() => activeRankView.value === 'industry' ? sortedIndustry.value : sortedConcept.value)
 const activeLoading = computed(() => activeRankView.value === 'limitUp' ? limitUpLoading.value : boardLoading.value)
-const maxContinuousBoards = computed(() => {
-  return Math.max(0, ...limitUpPool.value.map((item) => Number(item.continuousBoardCount || 0)))
-})
 const earliestFirstBoardTime = computed(() => {
   return limitUpPool.value
     .map((item) => item.firstBoardTime)
@@ -266,11 +257,6 @@ function stockRowTo(record: ZTPoolItem) {
   return {
     onClick: () => router.push(`/s/${record.code}`),
   }
-}
-
-function formatBoardCount(value: number | null | undefined) {
-  if (!value || Number.isNaN(value)) return '--'
-  return `${Math.floor(value)}连板`
 }
 
 onMounted(load)

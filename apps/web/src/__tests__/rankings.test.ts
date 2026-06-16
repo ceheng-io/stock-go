@@ -155,7 +155,7 @@ describe('ranking helpers', () => {
       template: `
         <div>
           <div v-for="row in dataSource" :key="row.code">
-            {{ row.name }} {{ row.code }} {{ row.industry }} {{ row.continuousBoardCount }}连板
+            {{ row.name }} {{ row.code }} {{ row.industry }} {{ row.ztStatistics }}
           </div>
         </div>
       `,
@@ -188,7 +188,8 @@ describe('ranking helpers', () => {
 
     expect(wrapper.text()).toContain('当日涨停板')
     expect(wrapper.text()).toContain('成飞集成')
-    expect(wrapper.text()).toContain('2连板')
+    expect(wrapper.text()).toContain('2/3')
+    expect(wrapper.text()).not.toContain('最高连板')
     expect(wrapper.text()).toContain('军工')
     expect(wrapper.text()).toContain('涨停家数 1')
     expect(wrapper.text()).toContain('行业板块')
@@ -333,9 +334,9 @@ describe('ranking helpers', () => {
 
   it('adds sortable columns to the limit-up table fields', async () => {
     const rows = [
-      limitUpItem({ code: '000001', name: '平安银行', amount: 200, continuousBoardCount: 1, firstBoardTime: '09:45:00', industry: '银行', reasonType: '银行' }),
-      limitUpItem({ code: '000002', name: '万科A', amount: 300, continuousBoardCount: 3, firstBoardTime: '09:31:00', industry: '地产', reasonType: '房地产' }),
-      limitUpItem({ code: '000003', name: '中信证券', amount: 100, continuousBoardCount: 2, firstBoardTime: '10:02:00', industry: '证券', reasonType: '券商' }),
+      limitUpItem({ code: '000001', name: '平安银行', amount: 200, ztStatistics: '首板', firstBoardTime: '09:45:00', industry: '银行', reasonType: '银行' }),
+      limitUpItem({ code: '000002', name: '万科A', amount: 300, ztStatistics: '3天3板', firstBoardTime: '09:31:00', industry: '地产', reasonType: '房地产' }),
+      limitUpItem({ code: '000003', name: '中信证券', amount: 100, ztStatistics: '2天2板', firstBoardTime: '10:02:00', industry: '证券', reasonType: '券商' }),
     ]
     apiMocks.getTHSLimitUpPool.mockResolvedValue(rows)
 
@@ -368,19 +369,30 @@ describe('ranking helpers', () => {
     await nextTick()
 
     const columns = wrapper.findComponent(tableStub).props('columns') as Array<{ key: string; sorter?: (left: ZTPoolItem, right: ZTPoolItem) => number }>
+    expect(columns.map((column) => column.key)).toEqual([
+      'rank',
+      'name',
+      'changePercent',
+      'ztStatistics',
+      'boardTime',
+      'industry',
+      'reasonType',
+      'amount',
+      'turnoverRate',
+    ])
     const amountSorter = columns.find((column) => column.key === 'amount')?.sorter
-    const boardCountSorter = columns.find((column) => column.key === 'continuousBoardCount')?.sorter
+    const statisticsSorter = columns.find((column) => column.key === 'ztStatistics')?.sorter
     const boardTimeSorter = columns.find((column) => column.key === 'boardTime')?.sorter
     const industrySorter = columns.find((column) => column.key === 'industry')?.sorter
     const reasonSorter = columns.find((column) => column.key === 'reasonType')?.sorter
 
     expect(amountSorter).toEqual(expect.any(Function))
-    expect(boardCountSorter).toEqual(expect.any(Function))
+    expect(statisticsSorter).toEqual(expect.any(Function))
     expect(boardTimeSorter).toEqual(expect.any(Function))
     expect(industrySorter).toEqual(expect.any(Function))
     expect(reasonSorter).toEqual(expect.any(Function))
     expect([...rows].sort(amountSorter).map((item) => item.code)).toEqual(['000003', '000001', '000002'])
-    expect([...rows].sort(boardCountSorter).map((item) => item.code)).toEqual(['000001', '000003', '000002'])
+    expect([...rows].sort(statisticsSorter).map((item) => item.code)).toEqual(['000003', '000002', '000001'])
     expect([...rows].sort(boardTimeSorter).map((item) => item.code)).toEqual(['000002', '000001', '000003'])
     expect([...rows].sort(industrySorter).map((item) => item.code)).toEqual(['000002', '000001', '000003'])
     expect([...rows].sort(reasonSorter).map((item) => item.code)).toEqual(['000002', '000003', '000001'])
