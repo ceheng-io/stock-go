@@ -1,4 +1,5 @@
 import { getAllAShareQuotes, getKlineWithIndicators, getTodayTimeline } from '@/services/api'
+import type { FullQuote } from '@/types'
 import { normalizeStockCode, parseStockCode } from '@/utils/format'
 
 export interface AnalysisProgress {
@@ -44,6 +45,12 @@ export interface EndOfDayStock {
   volumeRatio: number | null
   circulatingMarketCap: number | null
   totalMarketCap: number | null
+  pe: number | null
+  pb: number | null
+  high: number
+  low: number
+  open: number
+  prevClose: number
   timeline?: TimelinePoint[]
   timelineAboveAvgRatio?: number
 }
@@ -90,6 +97,8 @@ const SCANNER_SIGNAL_LABELS: Record<ScannerSignalKey, string> = {
   boll_lower: 'BOLL下轨',
 }
 
+const DEFAULT_SCAN_CONCURRENCY = 4
+
 class AnalysisAbortError extends Error {
   code = 'ANALYSIS_ABORTED'
 }
@@ -123,16 +132,18 @@ async function mapWithConcurrency<T, R>(
   mapper: (item: T, index: number) => Promise<R>,
   options?: { concurrency?: number; signal?: AbortSignal; onProgress?: (completed: number, total: number) => void },
 ) {
-  const concurrency = Math.max(1, options?.concurrency ?? 4)
+  const concurrency = Math.max(1, options?.concurrency ?? DEFAULT_SCAN_CONCURRENCY)
   const results: R[] = []
   let cursor = 0
   let completed = 0
   async function worker() {
-    while (cursor < items.length) {
+    while (true) {
       throwIfAborted(options?.signal)
       const index = cursor
       cursor += 1
+      if (index >= items.length) return
       const result = await mapper(items[index], index)
+      throwIfAborted(options?.signal)
       results.push(result)
       completed += 1
       options?.onProgress?.(completed, items.length)
@@ -142,24 +153,20 @@ async function mapWithConcurrency<T, R>(
   return results
 }
 
-export async function analyzeEndOfDayStocks(
-  filters: EndOfDayFilters,
-  options?: { signal?: AbortSignal; onProgress?: (progress: AnalysisProgress) => void; timelineConcurrency?: number },
-) {
-  options?.onProgress?.({ completed: 0, total: 0, stage: '获取行情数据' })
-  const quotes = await getAllAShareQuotes({ batchSize: 500, concurrency: 4 })
-  throwIfAborted(options?.signal)
-
-  const basicStocks = quotes
+function filterBasicQuotes(quotes: FullQuote[], filters: EndOfDayFilters): EndOfDayStock[] {
+  return quotes
     .filter((quote) => {
       const marketCap = quote.circulatingMarketCap
       const volumeRatio = quote.volumeRatio
+      const changePercent = quote.changePercent
       const turnoverRate = quote.turnoverRate
+
       if (filters.excludeST && (quote.name.includes('ST') || quote.name.includes('*ST'))) return false
       if (marketCap === null || marketCap === undefined || marketCap < filters.marketCapMin || marketCap > filters.marketCapMax) return false
       if (volumeRatio === null || volumeRatio === undefined || volumeRatio < filters.volumeRatioMin) return false
-      if (quote.changePercent < filters.changePercentMin || quote.changePercent > filters.changePercentMax) return false
+      if (changePercent < filters.changePercentMin || changePercent > filters.changePercentMax) return false
       if (turnoverRate === null || turnoverRate === undefined || turnoverRate < filters.turnoverRateMin || turnoverRate > filters.turnoverRateMax) return false
+
       return true
     })
     .map((quote) => ({
@@ -175,7 +182,32 @@ export async function analyzeEndOfDayStocks(
       volumeRatio: quote.volumeRatio ?? null,
       circulatingMarketCap: quote.circulatingMarketCap ?? null,
       totalMarketCap: quote.totalMarketCap ?? null,
+      pe: quote.pe ?? null,
+      pb: quote.pb ?? null,
+      high: quote.high,
+      low: quote.low,
+      open: quote.open,
+      prevClose: quote.prevClose,
     }))
+    .sort((a, b) => b.changePercent - a.changePercent)
+}
+
+export async function analyzeEndOfDayStocks(
+  filters: EndOfDayFilters,
+  options?: { signal?: AbortSignal; onProgress?: (progress: AnalysisProgress) => void; timelineConcurrency?: number },
+) {
+  options?.onProgress?.({ completed: 0, total: 0, stage: '获取行情数据' })
+  const quotes = await getAllAShareQuotes({
+    batchSize: 500,
+    concurrency: 4,
+    onProgress: (completed, total) => {
+      options?.onProgress?.({ completed, total, stage: '获取行情数据' })
+    },
+  })
+  throwIfAborted(options?.signal)
+
+  const basicStocks = filterBasicQuotes(quotes, filters)
+  if (basicStocks.length === 0) return []
 
   options?.onProgress?.({ completed: 0, total: basicStocks.length, stage: '分时结构筛选' })
   const results = await mapWithConcurrency(
@@ -186,7 +218,7 @@ export async function analyzeEndOfDayStocks(
       if (ratio < filters.timelineAboveAvgRatio) return null
       return { ...stock, timeline: points, timelineAboveAvgRatio: ratio }
     },
-    { concurrency: options?.timelineConcurrency ?? 4, signal: options?.signal, onProgress: (completed, total) => options?.onProgress?.({ completed, total, stage: '分时结构筛选' }) },
+    { concurrency: options?.timelineConcurrency ?? DEFAULT_SCAN_CONCURRENCY, signal: options?.signal, onProgress: (completed, total) => options?.onProgress?.({ completed, total, stage: '分时结构筛选' }) },
   )
   return results
     .filter((item) => item !== null)

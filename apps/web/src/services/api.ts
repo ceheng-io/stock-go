@@ -3,6 +3,7 @@ import { normalizeBoardSpotRows, type BoardSpotRow } from '@/services/charts'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 type QueryValue = string | number | boolean | undefined | null
+type QuoteBatchOptions = { batchSize?: number; concurrency?: number; onProgress?: (completed: number, total: number) => void }
 
 const INITIALISM_PREFIXES = [
   'MACD',
@@ -138,12 +139,19 @@ export function getFullQuotes(codes: string[]) {
   return apiRequest<FullQuote[]>(`/quotes/full${codesQuery(codes)}`).then((rows) => restoreRequestedQuoteCodes(rows, codes))
 }
 
-export function getAllQuotesByCodes(codes: string[], options?: { batchSize?: number; concurrency?: number }) {
-  return apiRequest<FullQuote[]>(`/quotes/batch${query({ codes: codes.join(','), ...options })}`)
+function quoteBatchQuery(options?: QuoteBatchOptions) {
+  return query({
+    batchSize: options?.batchSize,
+    concurrency: options?.concurrency,
+  })
 }
 
-export function getAllAShareQuotes(options?: { batchSize?: number; concurrency?: number }) {
-  return apiRequest<FullQuote[]>(`/quotes/a-share${query(options || {})}`)
+export function getAllQuotesByCodes(codes: string[], options?: QuoteBatchOptions) {
+  return apiRequest<FullQuote[]>(`/quotes/batch${query({ codes: codes.join(','), batchSize: options?.batchSize, concurrency: options?.concurrency })}`)
+}
+
+export function getAllAShareQuotes(options?: QuoteBatchOptions) {
+  return apiRequest<FullQuote[]>(`/quotes/a-share${quoteBatchQuery(options)}`)
 }
 
 export function search(keyword: string) {

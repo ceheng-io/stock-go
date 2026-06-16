@@ -96,7 +96,9 @@ export function saveEndOfDayRecentUsage(items: EndOfDayRecentUsage[]): void {
 export function addEndOfDayRecentUsage(filters: EndOfDayFilters, now = Date.now()): EndOfDayRecentUsage {
   const normalized = cloneFilters(filters)
   const key = filtersKey(normalized)
-  const recent = getEndOfDayRecentUsage().filter((item) => filtersKey(item.filters) !== key)
+  const recent = getEndOfDayRecentUsage()
+  const existing = recent.find((item) => filtersKey(item.filters) === key)
+  if (existing) return existing
   const entry = { filters: normalized, usedAt: now }
   saveEndOfDayRecentUsage([entry, ...recent])
   return entry

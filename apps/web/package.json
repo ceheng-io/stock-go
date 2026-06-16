@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
+    "@lucide/vue": "^1.18.0",
     "ant-design-vue": "^4.2.6",
     "echarts": "^6.0.0",
     "klinecharts": "^9.8.12",

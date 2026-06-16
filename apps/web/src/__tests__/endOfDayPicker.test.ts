@@ -1,7 +1,7 @@
-import { mount } from '@vue/test-utils'
-import { defineComponent, nextTick } from 'vue'
+import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import EndOfDayPicker from '@/pages/EndOfDayPicker/EndOfDayPicker.vue'
+import { analyzeEndOfDayStocks } from '@/services/analysis'
 import {
   DEFAULT_END_OF_DAY_FILTERS,
   addEndOfDayRecentUsage,
@@ -16,12 +16,46 @@ import {
   toggleSelectedCode,
 } from '@/services/endOfDayPicker'
 import type { EndOfDayStock } from '@/services/analysis'
+import { addToWatchlist } from '@/services/storage'
 
 const push = vi.fn()
+const messageMocks = vi.hoisted(() => ({
+  info: vi.fn(),
+  success: vi.fn(),
+  warning: vi.fn(),
+  error: vi.fn(),
+}))
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push }),
 }))
+
+vi.mock('ant-design-vue', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('ant-design-vue')>()
+  return {
+    ...actual,
+    message: {
+      ...actual.message,
+      info: messageMocks.info,
+      success: messageMocks.success,
+      warning: messageMocks.warning,
+      error: messageMocks.error,
+    },
+  }
+})
+
+vi.mock('@/services/analysis', () => ({
+  analyzeEndOfDayStocks: vi.fn(),
+  isAnalysisAborted: vi.fn(() => false),
+}))
+
+vi.mock('@/services/storage', () => ({
+  addToWatchlist: vi.fn(),
+  isInWatchlist: vi.fn(() => false),
+}))
+
+const mockAnalyzeEndOfDayStocks = vi.mocked(analyzeEndOfDayStocks)
+const mockAddToWatchlist = vi.mocked(addToWatchlist)
 
 function stock(partial: Partial<EndOfDayStock>): EndOfDayStock {
   return {
@@ -37,6 +71,13 @@ function stock(partial: Partial<EndOfDayStock>): EndOfDayStock {
     volumeRatio: partial.volumeRatio ?? null,
     circulatingMarketCap: partial.circulatingMarketCap ?? null,
     totalMarketCap: partial.totalMarketCap ?? null,
+    pe: partial.pe ?? null,
+    pb: partial.pb ?? null,
+    high: partial.high ?? 10.5,
+    low: partial.low ?? 9.5,
+    open: partial.open ?? 9.8,
+    prevClose: partial.prevClose ?? 9.7,
+    timeline: partial.timeline,
     timelineAboveAvgRatio: partial.timelineAboveAvgRatio,
   }
 }
@@ -53,6 +94,13 @@ describe('end of day picker helpers', () => {
       clear: () => store.clear(),
     })
     localStorage.clear()
+    push.mockClear()
+    mockAnalyzeEndOfDayStocks.mockReset()
+    mockAddToWatchlist.mockClear()
+    messageMocks.info.mockClear()
+    messageMocks.success.mockClear()
+    messageMocks.warning.mockClear()
+    messageMocks.error.mockClear()
   })
 
   it('persists filters while falling back to defaults for missing fields', () => {
@@ -75,7 +123,7 @@ describe('end of day picker helpers', () => {
     expect(getEndOfDaySchemes()).toEqual([])
   })
 
-  it('deduplicates recent usage by filter content and caps records at five', () => {
+  it('deduplicates recent usage by filter content without moving existing entries and caps records at five', () => {
     for (let index = 0; index < 7; index += 1) {
       addEndOfDayRecentUsage({ ...DEFAULT_END_OF_DAY_FILTERS, marketCapMin: 50 + index }, 1000 + index)
     }
@@ -83,8 +131,9 @@ describe('end of day picker helpers', () => {
 
     const recent = getEndOfDayRecentUsage()
     expect(recent).toHaveLength(5)
-    expect(recent[0]).toMatchObject({ usedAt: 2000, filters: { marketCapMin: 55 } })
+    expect(recent[0]).toMatchObject({ usedAt: 1006, filters: { marketCapMin: 56 } })
     expect(recent.filter((item) => item.filters.marketCapMin === 55)).toHaveLength(1)
+    expect(recent.find((item) => item.filters.marketCapMin === 55)?.usedAt).toBe(1005)
   })
 
   it('sorts result stocks by numeric fields with nulls treated as zero', () => {
@@ -111,54 +160,72 @@ describe('end of day picker helpers', () => {
     ).toEqual(['sz000001'])
   })
 
-  it('passes result row navigation through Ant Design table customRow', async () => {
-    const tableStub = defineComponent({
-      name: 'ATable',
-      props: {
-        customRow: { type: Function, default: undefined },
-        dataSource: { type: Array, default: () => [] },
-      },
-      template: '<div data-testid="eod-table" />',
-    })
+  it('renders TypeScript-style start screen before analysis', () => {
+    const wrapper = mount(EndOfDayPicker)
 
-    const wrapper = mount(EndOfDayPicker, {
-      global: {
-        stubs: {
-          AButton: true,
-          ACard: { template: '<section><slot /><slot name="extra" /></section>' },
-          ACheckbox: true,
-          ACol: { template: '<div><slot /></div>' },
-          ADescriptions: true,
-          ADescriptionsItem: true,
-          ADivider: true,
-          AEmpty: true,
-          AForm: { template: '<form><slot /></form>' },
-          AFormItem: { template: '<div><slot /></div>' },
-          AInputNumber: true,
-          AInputSearch: true,
-          AList: true,
-          AListItem: true,
-          AListItemMeta: true,
-          APopover: true,
-          AProgress: true,
-          ARow: { template: '<div><slot /></div>' },
-          ASegmented: true,
-          ASelect: true,
-          ASpace: { template: '<div><slot /></div>' },
-          AStatistic: true,
-          ATable: tableStub,
-        },
-      },
-    })
+    expect(wrapper.find('[data-testid="eod-start"]').exists()).toBe(true)
+    expect(wrapper.find('.start-screen').exists()).toBe(true)
+    expect(wrapper.text()).toContain('点击编辑')
+    expect(wrapper.text()).not.toContain('共筛选出')
+  })
 
-    const vm = wrapper.vm as unknown as { stocks: EndOfDayStock[] }
-    vm.stocks = [stock({ routeCode: 'sh600519', name: '贵州茅台' })]
-    await nextTick()
+  it('shows card results, navigates from cards, and can return to the start screen', async () => {
+    mockAnalyzeEndOfDayStocks.mockResolvedValue([
+      stock({
+        code: '600519',
+        routeCode: 'sh600519',
+        name: '贵州茅台',
+        changePercent: 4.2,
+        change: 12.3,
+        price: 305.5,
+        prevClose: 293.2,
+        circulatingMarketCap: 120,
+        volumeRatio: 1.8,
+        turnoverRate: 6.5,
+        amount: 360000000,
+        timelineAboveAvgRatio: 100,
+        timeline: [
+          { time: '14:57', price: 305, avgPrice: 301 },
+          { time: '14:58', price: 306, avgPrice: 302 },
+        ],
+      }),
+    ])
 
-    const customRow = wrapper.getComponent(tableStub).props('customRow')
-    expect(customRow).toEqual(expect.any(Function))
+    const wrapper = mount(EndOfDayPicker)
+    await wrapper.get('[data-testid="eod-start"]').trigger('click')
+    await flushPromises()
 
-    customRow?.({ routeCode: 'sh600519' }).onClick()
+    expect(wrapper.text()).toContain('共筛选出 1 只符合条件的股票')
+    expect(wrapper.find('.stock-card').exists()).toBe(true)
+    expect(wrapper.text()).toContain('强度 100%')
+
+    await wrapper.get('.stock-card').trigger('click')
     expect(push).toHaveBeenCalledWith('/s/sh600519')
+
+    await wrapper.get('[data-testid="eod-reset"]').trigger('click')
+    expect(wrapper.find('.start-screen').exists()).toBe(true)
+    expect(wrapper.text()).not.toContain('共筛选出 1 只符合条件的股票')
+  })
+
+  it('matches TypeScript batch select mode and adds selected cards to the watchlist', async () => {
+    mockAnalyzeEndOfDayStocks.mockResolvedValue([
+      stock({ code: '600519', routeCode: 'sh600519', name: '贵州茅台', timelineAboveAvgRatio: 100 }),
+      stock({ code: '000001', routeCode: 'sz000001', name: '平安银行', timelineAboveAvgRatio: 90 }),
+    ])
+
+    const wrapper = mount(EndOfDayPicker)
+    await wrapper.get('[data-testid="eod-start"]').trigger('click')
+    await flushPromises()
+
+    await wrapper.get('[data-testid="eod-select-mode"]').trigger('click')
+    const selectButtons = wrapper.findAll('.select-btn')
+    expect(selectButtons).toHaveLength(2)
+
+    await selectButtons[0].trigger('click')
+    await selectButtons[1].trigger('click')
+    await wrapper.get('[data-testid="eod-batch-add"]').trigger('click')
+
+    expect(mockAddToWatchlist).toHaveBeenCalledWith('sh600519')
+    expect(mockAddToWatchlist).toHaveBeenCalledWith('sz000001')
   })
 })
