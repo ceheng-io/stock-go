@@ -1,0 +1,9 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "go",
+      "package-name": "github.com/ceheng.io/stock-go",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}
