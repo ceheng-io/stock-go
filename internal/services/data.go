@@ -15,22 +15,35 @@ type DataClient interface {
 	eastmoney.BlockTradeClient
 	eastmoney.MarginClient
 	eastmoney.DividendClient
+	eastmoney.FundamentalClient
 }
 
 // DataServiceOptions 包含数据类服务端点。
 type DataServiceOptions struct {
-	DatacenterURL string
+	DatacenterURL       string
+	F10BaseURL          string
+	AnnouncementListURL string
+	AnnouncementURL     string
 }
 
 // DataService 聚合数据类 provider。
 type DataService struct {
-	client     DataClient
-	datacenter string
+	client           DataClient
+	datacenter       string
+	f10Base          string
+	announcementList string
+	announcement     string
 }
 
 // NewDataService 创建 DataService。
 func NewDataService(client DataClient, options DataServiceOptions) *DataService {
-	return &DataService{client: client, datacenter: options.DatacenterURL}
+	return &DataService{
+		client:           client,
+		datacenter:       options.DatacenterURL,
+		f10Base:          options.F10BaseURL,
+		announcementList: options.AnnouncementListURL,
+		announcement:     options.AnnouncementURL,
+	}
 }
 
 // Search 返回腾讯 Smartbox 搜索结果。
@@ -86,4 +99,24 @@ func (s *DataService) MarginTargetList(ctx context.Context, date string) ([]type
 // DividendDetail 返回个股分红派送详情。
 func (s *DataService) DividendDetail(ctx context.Context, symbol string) ([]types.DividendDetail, error) {
 	return eastmoney.GetDividendDetail(ctx, s.client, s.datacenter, symbol)
+}
+
+// StockProfile 返回个股公司概况。
+func (s *DataService) StockProfile(ctx context.Context, symbol string) (types.StockProfile, error) {
+	return eastmoney.GetStockProfile(ctx, s.client, s.f10Base, symbol)
+}
+
+// FinancialIndicators 返回个股财务指标。
+func (s *DataService) FinancialIndicators(ctx context.Context, symbol string, options types.FinancialIndicatorOptions) ([]types.FinancialIndicator, error) {
+	return eastmoney.GetFinancialIndicators(ctx, s.client, s.f10Base, symbol, options)
+}
+
+// StockAnnouncements 返回个股公告列表。
+func (s *DataService) StockAnnouncements(ctx context.Context, symbol string, options types.AnnouncementOptions) (types.StockAnnouncementResult, error) {
+	return eastmoney.GetStockAnnouncements(ctx, s.client, s.announcementList, symbol, options)
+}
+
+// StockAnnouncementDetail 返回公告正文和附件。
+func (s *DataService) StockAnnouncementDetail(ctx context.Context, artCode string) (types.StockAnnouncementDetail, error) {
+	return eastmoney.GetStockAnnouncementDetail(ctx, s.client, s.announcement, artCode)
 }

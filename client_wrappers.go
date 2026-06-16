@@ -143,6 +143,26 @@ func (c *Client) GetDividendDetail(ctx context.Context, symbol string) ([]Divide
 	return c.Quotes.DividendDetail(ctx, symbol)
 }
 
+// GetStockProfile fetches stock company profile data.
+func (c *Client) GetStockProfile(ctx context.Context, symbol string) (StockProfile, error) {
+	return c.Data.StockProfile(ctx, symbol)
+}
+
+// GetFinancialIndicators fetches stock financial indicator rows.
+func (c *Client) GetFinancialIndicators(ctx context.Context, symbol string, options ...FinancialIndicatorOptions) ([]FinancialIndicator, error) {
+	return c.Data.FinancialIndicators(ctx, symbol, firstOption(options))
+}
+
+// GetStockAnnouncements fetches paginated stock announcement rows.
+func (c *Client) GetStockAnnouncements(ctx context.Context, symbol string, options ...AnnouncementOptions) (StockAnnouncementResult, error) {
+	return c.Data.StockAnnouncements(ctx, symbol, firstOption(options))
+}
+
+// GetStockAnnouncementDetail fetches one stock announcement body and attachments.
+func (c *Client) GetStockAnnouncementDetail(ctx context.Context, artCode string) (StockAnnouncementDetail, error) {
+	return c.Data.StockAnnouncementDetail(ctx, artCode)
+}
+
 // GetIndustryList fetches industry boards.
 func (c *Client) GetIndustryList(ctx context.Context) ([]Board, error) {
 	return c.Board.IndustryList(ctx)

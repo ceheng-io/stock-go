@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { apiRequest, getBoardSpot, getFullQuotes, getTHSLimitUpPool, getZTPool } from '@/services/api'
+import { apiRequest, getBoardSpot, getFullQuotes, getKlineWithIndicators, getTHSLimitUpPool, getZTPool } from '@/services/api'
 
 describe('api client', () => {
   afterEach(() => {
@@ -83,6 +83,52 @@ describe('api client', () => {
       message: 'keyword is required',
       status: 400,
     })
+  })
+
+  it('deduplicates concurrent matching K-line requests', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [{ Date: '2026-06-12', Close: 1500 }],
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const [left, right] = await Promise.all([
+      getKlineWithIndicators('sh600519', { period: 'daily', adjust: 'qfq' }),
+      getKlineWithIndicators('sh600519', { period: 'daily', adjust: 'qfq' }),
+    ])
+
+    expect(left).toEqual([{ date: '2026-06-12', close: 1500 }])
+    expect(right).toEqual(left)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith('/api/kline/indicators?symbol=sh600519&period=daily&adjust=qfq', {
+      headers: { Accept: 'application/json' },
+    })
+  })
+
+  it('releases failed K-line requests so users can retry', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 502,
+        statusText: 'Bad Gateway',
+        json: async () => ({ error: { message: 'eastmoney EOF' } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ Date: '2026-06-15', Close: 1510 }],
+      })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(Promise.all([
+      getKlineWithIndicators('sh600519', { period: 'daily', adjust: 'qfq' }),
+      getKlineWithIndicators('sh600519', { period: 'daily', adjust: 'qfq' }),
+    ])).rejects.toMatchObject({ message: 'eastmoney EOF', status: 502 })
+
+    await expect(getKlineWithIndicators('sh600519', { period: 'daily', adjust: 'qfq' })).resolves.toEqual([
+      { date: '2026-06-15', close: 1510 },
+    ])
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it('normalizes object-like board spot payloads into metric rows', async () => {

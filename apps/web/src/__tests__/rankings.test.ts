@@ -245,6 +245,44 @@ describe('ranking helpers', () => {
     expect(wrapper.text()).toContain('低空经济')
   })
 
+  it('reloads the limit-up pool with the selected date', async () => {
+    const datePickerStub = defineComponent({
+      name: 'ADatePicker',
+      props: {
+        value: { type: String, default: '' },
+      },
+      emits: ['update:value', 'change'],
+      template: '<button data-testid="limit-up-date" @click="$emit(\'update:value\', \'2026-06-15\'); $emit(\'change\', \'2026-06-15\')">选择日期</button>',
+    })
+
+    const wrapper = mount(Rankings, {
+      global: {
+        stubs: {
+          AAlert: true,
+          AButton: true,
+          ACard: {
+            props: { title: { type: String, default: '' } },
+            template: '<section><h2>{{ title }}</h2><slot /><slot name="extra" /></section>',
+          },
+          ADatePicker: datePickerStub,
+          ASpace: { template: '<div><slot /></div>' },
+          ASegmented: true,
+          AStatistic: true,
+          ATable: true,
+          ATag: true,
+        },
+      },
+    })
+    await flushPromises()
+    await nextTick()
+    apiMocks.getTHSLimitUpPool.mockClear()
+
+    await wrapper.find('[data-testid="limit-up-date"]').trigger('click')
+    await flushPromises()
+
+    expect(apiMocks.getTHSLimitUpPool).toHaveBeenCalledWith({ date: '2026-06-15', limit: 100 })
+  })
+
   it('keeps successful limit-up rows visible when board rankings fail', async () => {
     apiMocks.getIndustryList.mockRejectedValue(new Error('industry failed'))
     apiMocks.getConceptList.mockRejectedValue(new Error('concept failed'))

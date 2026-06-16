@@ -43,6 +43,24 @@ type MinuteKline = domaintypes.MinuteKline
 type MinuteKlineResult = domaintypes.MinuteKlineResult
 type ExternalLink = domaintypes.ExternalLink
 
+type StockIssueInfo = domaintypes.StockIssueInfo
+type StockProfile = domaintypes.StockProfile
+type FinancialReportPeriod = domaintypes.FinancialReportPeriod
+type FinancialIndicatorOptions = domaintypes.FinancialIndicatorOptions
+type FinancialIndicator = domaintypes.FinancialIndicator
+type AnnouncementOptions = domaintypes.AnnouncementOptions
+type StockAnnouncementCode = domaintypes.StockAnnouncementCode
+type StockAnnouncementColumn = domaintypes.StockAnnouncementColumn
+type StockAnnouncement = domaintypes.StockAnnouncement
+type StockAnnouncementResult = domaintypes.StockAnnouncementResult
+type StockAnnouncementAttachment = domaintypes.StockAnnouncementAttachment
+type StockAnnouncementDetail = domaintypes.StockAnnouncementDetail
+
+const (
+	FinancialReportPeriodAll    = domaintypes.FinancialReportPeriodAll
+	FinancialReportPeriodAnnual = domaintypes.FinancialReportPeriodAnnual
+)
+
 type Board = domaintypes.Board
 type IndustryBoard = domaintypes.IndustryBoard
 type ConceptBoard = domaintypes.ConceptBoard

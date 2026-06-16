@@ -45,6 +45,9 @@ const (
 	EMConceptKlineURL     = "https://91.push2his.eastmoney.com/api/qt/stock/kline/get"
 	EMConceptTrendsURL    = "https://push2his.eastmoney.com/api/qt/stock/trends2/get"
 	EMDatacenterURL       = "https://datacenter-web.eastmoney.com/api/data/v1/get"
+	EMF10BaseURL          = "https://emweb.securities.eastmoney.com"
+	EMAnnouncementListURL = "https://np-anotice-stock.eastmoney.com/api/security/ann"
+	EMAnnouncementURL     = "https://np-cnotice-stock.eastmoney.com/api/content/ann"
 	EMFFlowURL            = "https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get"
 	EMClistURL            = "https://push2.eastmoney.com/api/qt/clist/get"
 	EMNorthboundMinuteURL = "https://push2.eastmoney.com/api/qt/kamtbs.rtmin/get"
@@ -69,6 +72,9 @@ const (
 	EM_CONCEPT_KLINE_URL     = EMConceptKlineURL
 	EM_CONCEPT_TRENDS_URL    = EMConceptTrendsURL
 	EM_DATACENTER_URL        = EMDatacenterURL
+	EM_F10_BASE_URL          = EMF10BaseURL
+	EM_ANNOUNCEMENT_LIST_URL = EMAnnouncementListURL
+	EM_ANNOUNCEMENT_URL      = EMAnnouncementURL
 	EM_FFLOW_URL             = EMFFlowURL
 	EM_CLIST_URL             = EMClistURL
 	EM_NORTHBOUND_MINUTE_URL = EMNorthboundMinuteURL

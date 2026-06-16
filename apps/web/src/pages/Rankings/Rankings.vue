@@ -16,7 +16,16 @@
 
     <a-card v-if="activeRankView === 'limitUp'" title="当日涨停板" size="small">
       <template #extra>
-        <span class="muted">数据源：涨停池</span>
+        <a-space>
+          <a-date-picker
+            v-model:value="limitUpDate"
+            value-format="YYYY-MM-DD"
+            allow-clear
+            placeholder="当前交易日"
+            @change="loadLimitUpPool"
+          />
+          <span class="muted">数据源：涨停池</span>
+        </a-space>
       </template>
       <div class="limit-up-summary">
         <a-statistic title="涨停家数" :value="limitUpPool.length" suffix="只" />
@@ -45,6 +54,9 @@
               {{ formatPercent(record.changePercent) }}
             </span>
           </template>
+          <template v-else-if="column.key === 'ztStatistics'">
+            {{ record.ztStatistics || '--' }}
+          </template>
           <template v-else-if="column.key === 'boardTime'">
             <div>{{ record.firstBoardTime || '--' }}</div>
             <div class="muted">末封 {{ record.lastBoardTime || '--' }}</div>
@@ -55,9 +67,6 @@
           <template v-else-if="column.key === 'reasonType'">
             <div class="limit-up-reason">{{ record.reasonType || '--' }}</div>
             <div v-if="record.limitUpType" class="muted">{{ record.limitUpType }}</div>
-          </template>
-          <template v-else-if="column.key === 'ztStatistics'">
-            {{ record.ztStatistics || '--' }}
           </template>
           <template v-else-if="column.key === 'amount'">
             {{ formatAmount(record.amount) }}
@@ -135,6 +144,7 @@ type RankView = 'limitUp' | 'industry' | 'concept'
 const router = useRouter()
 const activeRankView = ref<RankView>('limitUp')
 const rankType = ref<BoardRankingType>('rise')
+const limitUpDate = ref('')
 const industry = ref<Board[]>([])
 const concept = ref<Board[]>([])
 const limitUpPool = ref<ZTPoolItem[]>([])
@@ -226,7 +236,7 @@ async function loadLimitUpPool() {
   limitUpLoading.value = true
   try {
     return await Promise.allSettled([
-      getTHSLimitUpPool({ limit: 100 }).then((value) => {
+      getTHSLimitUpPool({ date: limitUpDate.value, limit: 100 }).then((value) => {
         limitUpPool.value = value
       }),
     ])

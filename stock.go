@@ -116,7 +116,10 @@ func New(options ...Option) *Client {
 		Margin:      services.NewMarginService(coreClient, config.EastmoneyDatacenterURL),
 		Dividend:    services.NewDividendService(coreClient, config.EastmoneyDatacenterURL),
 		Data: services.NewDataService(coreClient, services.DataServiceOptions{
-			DatacenterURL: config.EastmoneyDatacenterURL,
+			DatacenterURL:       config.EastmoneyDatacenterURL,
+			F10BaseURL:          config.EastmoneyF10BaseURL,
+			AnnouncementListURL: config.EastmoneyAnnouncementListURL,
+			AnnouncementURL:     config.EastmoneyAnnouncementURL,
 		}),
 		MarketEvent: services.NewMarketEventService(coreClient, config.EastmoneyTopicURL, config.THSLimitUpPoolURL),
 		Fund: services.NewFundService(coreClient, services.FundURLs{

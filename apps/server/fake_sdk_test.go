@@ -122,6 +122,22 @@ func (f *fakeSDK) GetDividendDetail(context.Context, string) ([]stock.DividendDe
 	return nil, nil
 }
 
+func (f *fakeSDK) GetStockProfile(context.Context, string) (stock.StockProfile, error) {
+	return stock.StockProfile{}, nil
+}
+
+func (f *fakeSDK) GetFinancialIndicators(context.Context, string, ...stock.FinancialIndicatorOptions) ([]stock.FinancialIndicator, error) {
+	return nil, nil
+}
+
+func (f *fakeSDK) GetStockAnnouncements(context.Context, string, ...stock.AnnouncementOptions) (stock.StockAnnouncementResult, error) {
+	return stock.StockAnnouncementResult{}, nil
+}
+
+func (f *fakeSDK) GetStockAnnouncementDetail(context.Context, string) (stock.StockAnnouncementDetail, error) {
+	return stock.StockAnnouncementDetail{}, nil
+}
+
 func (f *fakeSDK) GetTradingCalendar(context.Context) ([]string, error) {
 	return nil, nil
 }

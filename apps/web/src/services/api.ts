@@ -1,9 +1,11 @@
-import type { Board, FullQuote, SearchResult, ZTPoolItem } from '@/types'
+import type { Board, FinancialIndicator, FullQuote, SearchResult, StockAnnouncementDetail, StockAnnouncementResult, StockProfile, ZTPoolItem } from '@/types'
 import { normalizeBoardSpotRows, type BoardSpotRow } from '@/services/charts'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 type QueryValue = string | number | boolean | undefined | null
 type QuoteBatchOptions = { batchSize?: number; concurrency?: number; onProgress?: (completed: number, total: number) => void }
+
+const inFlightKlineRequests = new Map<string, Promise<unknown>>()
 
 const INITIALISM_PREFIXES = [
   'MACD',
@@ -67,6 +69,17 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   }
 
   return camelizeKeys(await response.json()) as T
+}
+
+function requestKline<T>(path: string): Promise<T> {
+  const existing = inFlightKlineRequests.get(path) as Promise<T> | undefined
+  if (existing) return existing
+
+  const request = apiRequest<T>(path).finally(() => {
+    inFlightKlineRequests.delete(path)
+  })
+  inFlightKlineRequests.set(path, request)
+  return request
 }
 
 function toCamelKey(key: string): string {
@@ -175,15 +188,15 @@ export function getConceptConstituents(code: string) {
 }
 
 export function getHistoryKline(symbol: string, options?: Record<string, string>) {
-  return apiRequest(`/kline/history${query({ symbol, ...options })}`)
+  return requestKline(`/kline/history${query({ symbol, ...options })}`)
 }
 
 export function getMinuteKline(symbol: string, options?: Record<string, string>) {
-  return apiRequest(`/kline/minute${query({ symbol, ...options })}`)
+  return requestKline(`/kline/minute${query({ symbol, ...options })}`)
 }
 
 export function getKlineWithIndicators(symbol: string, options?: Record<string, string | boolean>) {
-  return apiRequest(`/kline/indicators${query({ symbol, ...options })}`)
+  return requestKline(`/kline/indicators${query({ symbol, ...options })}`)
 }
 
 export function getTodayTimeline(code: string) {
@@ -195,11 +208,11 @@ export function getBoardSpot(type: 'industry' | 'concept', code: string) {
 }
 
 export function getBoardKline(type: 'industry' | 'concept', code: string, options?: Record<string, QueryValue>) {
-  return apiRequest(`/boards/${type}/${encodeURIComponent(code)}/kline${query(options || {})}`)
+  return requestKline(`/boards/${type}/${encodeURIComponent(code)}/kline${query(options || {})}`)
 }
 
 export function getBoardMinuteKline(type: 'industry' | 'concept', code: string, options?: Record<string, QueryValue>) {
-  return apiRequest(`/boards/${type}/${encodeURIComponent(code)}/minute${query(options || {})}`)
+  return requestKline(`/boards/${type}/${encodeURIComponent(code)}/minute${query(options || {})}`)
 }
 
 export function getQuoteFundFlow(codes: string[]) {
@@ -346,6 +359,22 @@ export function getMarginAccountInfo() {
 
 export function getDividendDetail(symbol: string) {
   return apiRequest(`/dividends${query({ symbol })}`)
+}
+
+export function getStockProfile(symbol: string) {
+  return apiRequest<StockProfile>(`/stocks/profile${query({ symbol })}`)
+}
+
+export function getFinancialIndicators(symbol: string, options?: { period?: 'all' | 'annual' }) {
+  return apiRequest<FinancialIndicator[]>(`/stocks/financial-indicators${query({ symbol, ...options })}`)
+}
+
+export function getStockAnnouncements(symbol: string, options?: { pageSize?: number; pageIndex?: number }) {
+  return apiRequest<StockAnnouncementResult>(`/stocks/announcements${query({ symbol, ...options })}`)
+}
+
+export function getStockAnnouncementDetail(artCode: string) {
+  return apiRequest<StockAnnouncementDetail>(`/stocks/announcements/${encodeURIComponent(artCode)}`)
 }
 
 export function getTradingCalendar() {

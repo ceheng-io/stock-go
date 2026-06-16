@@ -63,6 +63,10 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/block-trade/detail", s.handleBlockTradeDetail)
 	s.mux.HandleFunc("GET /api/margin/account", s.handleMarginAccount)
 	s.mux.HandleFunc("GET /api/dividends", s.handleDividendDetail)
+	s.mux.HandleFunc("GET /api/stocks/profile", s.handleStockProfile)
+	s.mux.HandleFunc("GET /api/stocks/financial-indicators", s.handleFinancialIndicators)
+	s.mux.HandleFunc("GET /api/stocks/announcements", s.handleStockAnnouncements)
+	s.mux.HandleFunc("GET /api/stocks/announcements/{artCode}", s.handleStockAnnouncementDetail)
 	s.mux.HandleFunc("GET /api/trading-calendar", s.handleTradingCalendar)
 }
 

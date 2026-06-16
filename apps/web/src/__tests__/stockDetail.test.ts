@@ -10,6 +10,7 @@ vi.mock('vue-router', () => ({
 
 vi.mock('@/services/api', () => ({
   getDividendDetail: vi.fn(async () => []),
+  getFinancialIndicators: vi.fn(async () => []),
   getFullQuotes: vi.fn(async (): Promise<FullQuote[]> => [
     {
       code: 'sh600519',
@@ -32,6 +33,9 @@ vi.mock('@/services/api', () => ({
   getNorthboundIndividual: vi.fn(async () => []),
   getPanelLargeOrder: vi.fn(async () => []),
   getQuoteFundFlow: vi.fn(async () => []),
+  getStockAnnouncementDetail: vi.fn(async () => ({ artCode: 'AN1', title: '公告', noticeContent: '正文' })),
+  getStockAnnouncements: vi.fn(async () => ({ list: [], pageIndex: 1, pageSize: 10, total: 0 })),
+  getStockProfile: vi.fn(async () => ({ code: '600519', name: '贵州茅台', secuCode: '600519.SH' })),
   getTodayTimeline: vi.fn(async () => ({ preClose: 1291.9, data: [] })),
 }))
 
@@ -46,6 +50,7 @@ function mountStockDetail() {
         ACol: { template: '<div><slot /></div>' },
         ADescriptions: { template: '<dl><slot /></dl>' },
         ADescriptionsItem: { template: '<div><slot /></div>' },
+        ADrawer: { template: '<div><slot /></div>' },
         AEmpty: true,
         AForm: { template: '<form><slot /></form>' },
         AFormItem: { template: '<div><slot /></div>' },
@@ -58,6 +63,7 @@ function mountStockDetail() {
         ASelect: { template: '<select><slot /></select>' },
         ASelectOption: { template: '<option><slot /></option>' },
         ASpace: { template: '<div><slot /></div>' },
+        ASpin: { template: '<div><slot /></div>' },
         ATabPane: { template: '<div><slot /></div>' },
         ATable: true,
         ATabs: { template: '<div><slot /></div>' },

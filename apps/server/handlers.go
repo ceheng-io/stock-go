@@ -449,6 +449,58 @@ func (s *Server) handleDividendDetail(w http.ResponseWriter, r *http.Request) {
 	writeResult(w, data, err)
 }
 
+func (s *Server) handleStockProfile(w http.ResponseWriter, r *http.Request) {
+	symbol, ok := requiredQuery(r, "symbol")
+	if !ok {
+		writeError(w, http.StatusBadRequest, "symbol is required")
+		return
+	}
+	if !s.ensureSDK(w) {
+		return
+	}
+	data, err := s.sdk.GetStockProfile(r.Context(), symbol)
+	writeResult(w, data, err)
+}
+
+func (s *Server) handleFinancialIndicators(w http.ResponseWriter, r *http.Request) {
+	symbol, ok := requiredQuery(r, "symbol")
+	if !ok {
+		writeError(w, http.StatusBadRequest, "symbol is required")
+		return
+	}
+	if !s.ensureSDK(w) {
+		return
+	}
+	data, err := s.sdk.GetFinancialIndicators(r.Context(), symbol, asFinancialIndicatorOptions(r))
+	writeResult(w, data, err)
+}
+
+func (s *Server) handleStockAnnouncements(w http.ResponseWriter, r *http.Request) {
+	symbol, ok := requiredQuery(r, "symbol")
+	if !ok {
+		writeError(w, http.StatusBadRequest, "symbol is required")
+		return
+	}
+	if !s.ensureSDK(w) {
+		return
+	}
+	data, err := s.sdk.GetStockAnnouncements(r.Context(), symbol, asAnnouncementOptions(r))
+	writeResult(w, data, err)
+}
+
+func (s *Server) handleStockAnnouncementDetail(w http.ResponseWriter, r *http.Request) {
+	artCode := r.PathValue("artCode")
+	if artCode == "" {
+		writeError(w, http.StatusBadRequest, "artCode is required")
+		return
+	}
+	if !s.ensureSDK(w) {
+		return
+	}
+	data, err := s.sdk.GetStockAnnouncementDetail(r.Context(), artCode)
+	writeResult(w, data, err)
+}
+
 func (s *Server) handleTradingCalendar(w http.ResponseWriter, r *http.Request) {
 	if !s.ensureSDK(w) {
 		return

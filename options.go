@@ -45,6 +45,9 @@ type Config struct {
 	EastmoneyClistURL                string
 	EastmoneyNorthboundMinuteURL     string
 	EastmoneyDatacenterURL           string
+	EastmoneyF10BaseURL              string
+	EastmoneyAnnouncementListURL     string
+	EastmoneyAnnouncementURL         string
 	EastmoneyTopicURL                string
 	EastmoneyFundGZURL               string
 	EastmoneyFundPingzhongURL        string
@@ -195,6 +198,9 @@ func defaultConfig() Config {
 		EastmoneyClistURL:                constants.EMClistURL,
 		EastmoneyNorthboundMinuteURL:     constants.EMNorthboundMinuteURL,
 		EastmoneyDatacenterURL:           constants.EMDatacenterURL,
+		EastmoneyF10BaseURL:              constants.EMF10BaseURL,
+		EastmoneyAnnouncementListURL:     constants.EMAnnouncementListURL,
+		EastmoneyAnnouncementURL:         constants.EMAnnouncementURL,
 		EastmoneyTopicURL:                constants.EMTopicBaseURL,
 		EastmoneyFundGZURL:               "https://fundgz.1234567.com.cn/js",
 		EastmoneyFundPingzhongURL:        "https://fund.eastmoney.com/pingzhongdata",

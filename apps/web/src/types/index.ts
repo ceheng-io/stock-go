@@ -118,6 +118,130 @@ export interface FullQuote {
   market?: string
 }
 
+export interface StockIssueInfo {
+  foundDate?: string | null
+  listingDate?: string | null
+  issueWay?: string
+  parValue?: number | null
+  totalIssueShares?: number | null
+  issuePrice?: number | null
+  totalFunds?: number | null
+  netRaiseFunds?: number | null
+  openPrice?: number | null
+  closePrice?: number | null
+  turnoverRate?: number | null
+}
+
+export interface StockProfile {
+  secuCode: string
+  code: string
+  name: string
+  orgName?: string
+  orgNameEn?: string
+  formerName?: string
+  securityType?: string
+  industry?: string
+  tradeMarket?: string
+  csrcIndustry?: string
+  president?: string
+  legalRepresentative?: string
+  secretary?: string
+  chairman?: string
+  securitiesRepresentative?: string
+  tel?: string
+  email?: string
+  fax?: string
+  website?: string
+  address?: string
+  registeredAddress?: string
+  province?: string
+  addressPostcode?: string
+  registeredCapital?: number | null
+  registrationNumber?: string
+  employeeCount?: number | null
+  lawFirm?: string
+  accountingFirm?: string
+  profile?: string
+  businessScope?: string
+  issue?: StockIssueInfo
+}
+
+export interface FinancialIndicator {
+  secuCode: string
+  code: string
+  name: string
+  reportDate?: string | null
+  reportType?: string
+  reportDateName?: string
+  noticeDate?: string | null
+  updateDate?: string | null
+  currency?: string
+  basicEps?: number | null
+  deductBasicEps?: number | null
+  dilutedEps?: number | null
+  bps?: number | null
+  capitalReservePerShare?: number | null
+  unassignedProfitPerShare?: number | null
+  operatingCashFlowPerShare?: number | null
+  totalRevenue?: number | null
+  grossProfit?: number | null
+  parentNetProfit?: number | null
+  deductParentNetProfit?: number | null
+  totalRevenueYoY?: number | null
+  parentNetProfitYoY?: number | null
+  deductParentNetProfitYoY?: number | null
+  roeWeighted?: number | null
+  roeDeductWeighted?: number | null
+  roa?: number | null
+  netMargin?: number | null
+  grossMargin?: number | null
+  assetLiabilityRatio?: number | null
+  roic?: number | null
+  staffCount?: number | null
+}
+
+export interface StockAnnouncementColumn {
+  code: string
+  name: string
+}
+
+export interface StockAnnouncement {
+  artCode: string
+  title: string
+  titleCh?: string
+  titleEn?: string
+  noticeDate?: string | null
+  displayTime?: string | null
+  sortDate?: string | null
+  columns?: StockAnnouncementColumn[]
+}
+
+export interface StockAnnouncementResult {
+  list: StockAnnouncement[]
+  pageIndex: number
+  pageSize: number
+  total: number
+}
+
+export interface StockAnnouncementAttachment {
+  url: string
+  type: string
+  size?: number | null
+  seq?: number | null
+}
+
+export interface StockAnnouncementDetail {
+  artCode: string
+  title?: string
+  noticeDate?: string | null
+  attachUrl?: string
+  attachUrlWeb?: string
+  attachSize?: string
+  attachType?: string
+  noticeContent?: string
+  attachments?: StockAnnouncementAttachment[]
+}
+
 export interface Board {
   rank: number
   name: string

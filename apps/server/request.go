@@ -48,6 +48,10 @@ type SDK interface {
 	GetBlockTradeDetail(ctx context.Context, options ...stock.BlockTradeDateOptions) ([]stock.BlockTradeDetailItem, error)
 	GetMarginAccountInfo(ctx context.Context) ([]stock.MarginAccountItem, error)
 	GetDividendDetail(ctx context.Context, symbol string) ([]stock.DividendDetail, error)
+	GetStockProfile(ctx context.Context, symbol string) (stock.StockProfile, error)
+	GetFinancialIndicators(ctx context.Context, symbol string, options ...stock.FinancialIndicatorOptions) ([]stock.FinancialIndicator, error)
+	GetStockAnnouncements(ctx context.Context, symbol string, options ...stock.AnnouncementOptions) (stock.StockAnnouncementResult, error)
+	GetStockAnnouncementDetail(ctx context.Context, artCode string) (stock.StockAnnouncementDetail, error)
 	GetTradingCalendar(ctx context.Context) ([]string, error)
 }
 
@@ -135,5 +139,18 @@ func asNorthboundHistoryOptions(r *http.Request) stock.NorthboundHistoryOptions 
 	return stock.NorthboundHistoryOptions{
 		StartDate: queryString(r, "startDate", ""),
 		EndDate:   queryString(r, "endDate", ""),
+	}
+}
+
+func asFinancialIndicatorOptions(r *http.Request) stock.FinancialIndicatorOptions {
+	return stock.FinancialIndicatorOptions{
+		Period: stock.FinancialReportPeriod(queryString(r, "period", "")),
+	}
+}
+
+func asAnnouncementOptions(r *http.Request) stock.AnnouncementOptions {
+	return stock.AnnouncementOptions{
+		PageSize:  queryInt(r, "pageSize", 20),
+		PageIndex: queryInt(r, "pageIndex", 1),
 	}
 }

@@ -40,6 +40,9 @@ const (
 	EMConceptKlineURL        = constants.EMConceptKlineURL
 	EMConceptTrendsURL       = constants.EMConceptTrendsURL
 	EMDatacenterURL          = constants.EMDatacenterURL
+	EMF10BaseURL             = constants.EMF10BaseURL
+	EMAnnouncementListURL    = constants.EMAnnouncementListURL
+	EMAnnouncementURL        = constants.EMAnnouncementURL
 	EMFFlowURL               = constants.EMFFlowURL
 	EMClistURL               = constants.EMClistURL
 	EMNorthboundMinuteURL    = constants.EMNorthboundMinuteURL
@@ -63,6 +66,9 @@ const (
 	EM_CONCEPT_KLINE_URL     = constants.EM_CONCEPT_KLINE_URL
 	EM_CONCEPT_TRENDS_URL    = constants.EM_CONCEPT_TRENDS_URL
 	EM_DATACENTER_URL        = constants.EM_DATACENTER_URL
+	EM_F10_BASE_URL          = constants.EM_F10_BASE_URL
+	EM_ANNOUNCEMENT_LIST_URL = constants.EM_ANNOUNCEMENT_LIST_URL
+	EM_ANNOUNCEMENT_URL      = constants.EM_ANNOUNCEMENT_URL
 	EM_FFLOW_URL             = constants.EM_FFLOW_URL
 	EM_CLIST_URL             = constants.EM_CLIST_URL
 	EM_NORTHBOUND_MINUTE_URL = constants.EM_NORTHBOUND_MINUTE_URL
