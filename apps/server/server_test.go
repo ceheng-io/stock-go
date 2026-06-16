@@ -23,6 +23,7 @@ type fakeSDK struct {
 	sectorFundFlowOptions   stock.FundFlowOptions
 	ztPoolType              stock.ZTPoolType
 	ztPoolArgCount          int
+	thsLimitUpPoolOptions   stock.THSLimitUpPoolOptions
 }
 
 func (f *fakeSDK) Search(_ context.Context, keyword string) ([]stock.SearchResult, error) {
@@ -76,6 +77,15 @@ func (f *fakeSDK) GetZTPool(_ context.Context, args ...any) ([]stock.ZTPoolItem,
 		}
 	}
 	return []stock.ZTPoolItem{{Code: "600000", Name: "浦发银行"}}, nil
+}
+
+func (f *fakeSDK) GetTHSLimitUpPool(_ context.Context, options ...stock.THSLimitUpPoolOptions) (stock.THSLimitUpPoolResult, error) {
+	if len(options) > 0 {
+		f.thsLimitUpPoolOptions = options[0]
+	}
+	return stock.THSLimitUpPoolResult{
+		Items: []stock.THSLimitUpItem{{Code: "002190", Name: "成飞集成", ReasonType: "低空经济"}},
+	}, nil
 }
 
 func TestHealthReturnsOK(t *testing.T) {
@@ -302,5 +312,28 @@ func TestZTPoolEndpoint(t *testing.T) {
 	}
 	if fake.ztPoolArgCount != 1 {
 		t.Fatalf("expected only type argument, got %d", fake.ztPoolArgCount)
+	}
+}
+
+func TestTHSLimitUpPoolEndpointPassesOptionsAndReturnsReasons(t *testing.T) {
+	fake := &fakeSDK{}
+	server := NewServer(fake)
+	request := httptest.NewRequest(http.MethodGet, "/api/market-event/ths-limit-up-pool?date=2026-06-15&page=2&limit=20", nil)
+	response := httptest.NewRecorder()
+
+	server.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", response.Code)
+	}
+	if fake.thsLimitUpPoolOptions.Date != "2026-06-15" || fake.thsLimitUpPoolOptions.Page != 2 || fake.thsLimitUpPoolOptions.Limit != 20 {
+		t.Fatalf("unexpected THS options: %#v", fake.thsLimitUpPoolOptions)
+	}
+	var body stock.THSLimitUpPoolResult
+	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if len(body.Items) != 1 || body.Items[0].ReasonType != "低空经济" {
+		t.Fatalf("unexpected THS limit-up body: %#v", body)
 	}
 }

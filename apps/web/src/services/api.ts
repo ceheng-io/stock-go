@@ -254,6 +254,10 @@ export function getZTPool(type = 'zt', date?: string) {
   return apiRequest<unknown>(`/market-event/zt-pool${query({ type, date })}`).then(normalizeZTPoolRows)
 }
 
+export function getTHSLimitUpPool(options?: { date?: string; page?: number; limit?: number }) {
+  return apiRequest<unknown>(`/market-event/ths-limit-up-pool${query(options || {})}`).then(normalizeZTPoolRows)
+}
+
 function normalizeZTPoolRows(payload: unknown): ZTPoolItem[] {
   const rows = Array.isArray(payload)
     ? payload
@@ -282,7 +286,7 @@ function normalizeZTPoolItem(row: unknown): ZTPoolItem {
     boardAmount: numberValue(item.boardAmount),
     sealAmount: numberValue(item.sealAmount ?? item.orderAmount),
     failedCount: numberValue(item.failedCount ?? item.openNum),
-    industry: stringValue(item.industry ?? item.reasonType),
+    industry: stringValue(item.industry),
     ztStatistics: stringValue(item.ztStatistics ?? item.highDays),
     limitUpType: stringValue(item.limitUpType),
     reasonType: stringValue(item.reasonType),

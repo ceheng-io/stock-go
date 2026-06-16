@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { defineComponent, nextTick } from 'vue'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import AppHeader from '@/layouts/AppHeader.vue'
 
 const push = vi.fn()
@@ -79,6 +79,10 @@ describe('AppHeader', () => {
     vi.clearAllMocks()
     createStorage()
     localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('stores selected search result into recent history', async () => {

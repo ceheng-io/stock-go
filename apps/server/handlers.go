@@ -377,6 +377,19 @@ func (s *Server) handleZTPool(w http.ResponseWriter, r *http.Request) {
 	writeResult(w, data, err)
 }
 
+func (s *Server) handleTHSLimitUpPool(w http.ResponseWriter, r *http.Request) {
+	if !s.ensureSDK(w) {
+		return
+	}
+	options := stock.THSLimitUpPoolOptions{
+		Date:  queryString(r, "date", ""),
+		Page:  queryInt(r, "page", 0),
+		Limit: queryInt(r, "limit", 0),
+	}
+	data, err := s.sdk.GetTHSLimitUpPool(r.Context(), options)
+	writeResult(w, data, err)
+}
+
 func (s *Server) handleStockChanges(w http.ResponseWriter, r *http.Request) {
 	if !s.ensureSDK(w) {
 		return

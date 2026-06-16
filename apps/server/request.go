@@ -41,6 +41,7 @@ type SDK interface {
 	GetNorthboundHistory(ctx context.Context, args ...any) ([]stock.NorthboundHistoryItem, error)
 	GetNorthboundIndividual(ctx context.Context, symbol string, options ...stock.NorthboundHistoryOptions) ([]stock.NorthboundIndividualItem, error)
 	GetZTPool(ctx context.Context, args ...any) ([]stock.ZTPoolItem, error)
+	GetTHSLimitUpPool(ctx context.Context, options ...stock.THSLimitUpPoolOptions) (stock.THSLimitUpPoolResult, error)
 	GetStockChanges(ctx context.Context, changeTypes ...stock.StockChangeType) ([]stock.StockChangeItem, error)
 	GetBoardChanges(ctx context.Context) ([]stock.BoardChangeItem, error)
 	GetDragonTigerDetail(ctx context.Context, options stock.DragonTigerDateOptions) ([]stock.DragonTigerDetailItem, error)

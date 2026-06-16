@@ -56,6 +56,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/northbound/history", s.handleNorthboundHistory)
 	s.mux.HandleFunc("GET /api/northbound/individual", s.handleNorthboundIndividual)
 	s.mux.HandleFunc("GET /api/market-event/zt-pool", s.handleZTPool)
+	s.mux.HandleFunc("GET /api/market-event/ths-limit-up-pool", s.handleTHSLimitUpPool)
 	s.mux.HandleFunc("GET /api/market-event/stock-changes", s.handleStockChanges)
 	s.mux.HandleFunc("GET /api/market-event/board-changes", s.handleBoardChanges)
 	s.mux.HandleFunc("GET /api/dragon-tiger/detail", s.handleDragonTigerDetail)

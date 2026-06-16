@@ -57,6 +57,10 @@
           <template v-else-if="column.key === 'industry'">
             {{ record.industry || '--' }}
           </template>
+          <template v-else-if="column.key === 'reasonType'">
+            <div class="limit-up-reason">{{ record.reasonType || '--' }}</div>
+            <div v-if="record.limitUpType" class="muted">{{ record.limitUpType }}</div>
+          </template>
           <template v-else-if="column.key === 'ztStatistics'">
             {{ record.ztStatistics || '--' }}
           </template>
@@ -119,7 +123,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getConceptList, getIndustryList, getZTPool } from '@/services/api'
+import { getConceptList, getIndustryList, getTHSLimitUpPool } from '@/services/api'
 import { sortBoardRankings, type BoardRankingType } from '@/services/rankings'
 import type { Board, ZTPoolItem } from '@/types'
 import {
@@ -171,6 +175,7 @@ const limitUpColumns = [
   { title: '连板', key: 'continuousBoardCount', width: 86, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareNumber(a.continuousBoardCount, b.continuousBoardCount) },
   { title: '封板时间', key: 'boardTime', width: 120, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.firstBoardTime, b.firstBoardTime) },
   { title: '行业', key: 'industry', width: 120, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.industry, b.industry) },
+  { title: '涨停原因', key: 'reasonType', width: 150, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.reasonType, b.reasonType) },
   { title: '统计', key: 'ztStatistics', width: 90, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareText(a.ztStatistics, b.ztStatistics) },
   { title: '成交额', key: 'amount', width: 100, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareNumber(a.amount, b.amount) },
   { title: '换手', key: 'turnoverRate', width: 80, sorter: (a: ZTPoolItem, b: ZTPoolItem) => compareNumber(a.turnoverRate, b.turnoverRate) },
@@ -230,7 +235,7 @@ async function loadLimitUpPool() {
   limitUpLoading.value = true
   try {
     return await Promise.allSettled([
-      getZTPool().then((value) => {
+      getTHSLimitUpPool({ limit: 100 }).then((value) => {
         limitUpPool.value = value
       }),
     ])
@@ -280,6 +285,11 @@ onMounted(load)
 
 .board-name {
   font-weight: 600;
+}
+
+.limit-up-reason {
+  max-width: 150px;
+  overflow-wrap: anywhere;
 }
 
 .limit-up-summary {

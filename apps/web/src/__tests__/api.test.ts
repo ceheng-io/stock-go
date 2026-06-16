@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { apiRequest, getBoardSpot, getFullQuotes, getZTPool } from '@/services/api'
+import { apiRequest, getBoardSpot, getFullQuotes, getTHSLimitUpPool, getZTPool } from '@/services/api'
 
 describe('api client', () => {
   afterEach(() => {
@@ -143,10 +143,49 @@ describe('api client', () => {
         sealAmount: 420000000,
         turnoverRate: 8.32,
         continuousBoardCount: 2,
-        industry: '低空经济',
+        industry: '',
         ztStatistics: '2天2板',
+        limitUpType: '换手板',
+        reasonType: '低空经济',
+      }),
+    ])
+  })
+
+  it('normalizes Tonghuashun limit-up pool payloads into rows with reasons', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        Items: [
+          {
+            Code: '002190',
+            Name: '成飞集成',
+            Latest: 22.45,
+            ChangeRate: 10.01,
+            FirstLimitUpTimeText: '09:33:12',
+            LastLimitUpTimeText: '14:56:00',
+            OrderAmount: 420000000,
+            TurnoverRate: 8.32,
+            HighDays: '2天2板',
+            HighDaysValue: 2,
+            ReasonType: '低空经济',
+            LimitUpType: '换手板',
+          },
+        ],
+      }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(getTHSLimitUpPool({ date: '2026-06-15', limit: 20 })).resolves.toEqual([
+      expect.objectContaining({
+        code: '002190',
+        name: '成飞集成',
+        industry: '',
+        reasonType: '低空经济',
         limitUpType: '换手板',
       }),
     ])
+    expect(fetchMock).toHaveBeenCalledWith('/api/market-event/ths-limit-up-pool?date=2026-06-15&limit=20', {
+      headers: { Accept: 'application/json' },
+    })
   })
 })

@@ -9,7 +9,7 @@ const push = vi.fn()
 const apiMocks = vi.hoisted(() => ({
   getIndustryList: vi.fn(),
   getConceptList: vi.fn(),
-  getZTPool: vi.fn(),
+  getTHSLimitUpPool: vi.fn(),
 }))
 
 vi.mock('vue-router', () => ({
@@ -19,7 +19,7 @@ vi.mock('vue-router', () => ({
 vi.mock('@/services/api', () => ({
   getIndustryList: apiMocks.getIndustryList,
   getConceptList: apiMocks.getConceptList,
-  getZTPool: apiMocks.getZTPool,
+  getTHSLimitUpPool: apiMocks.getTHSLimitUpPool,
 }))
 
 function board(partial: Partial<Board>): Board {
@@ -46,6 +46,8 @@ function limitUpItem(partial: Partial<ZTPoolItem> = {}): ZTPoolItem {
     lastBoardTime: partial.lastBoardTime || '14:56:00',
     industry: partial.industry || '军工',
     ztStatistics: partial.ztStatistics || '2/3',
+    reasonType: partial.reasonType || null,
+    limitUpType: partial.limitUpType || null,
   }
 }
 
@@ -68,7 +70,7 @@ describe('ranking helpers', () => {
     apiMocks.getConceptList.mockResolvedValue([
       board({ rank: 1, code: 'BK1234', name: '白酒概念', changePercent: 3.1 }),
     ])
-    apiMocks.getZTPool.mockResolvedValue([limitUpItem()])
+    apiMocks.getTHSLimitUpPool.mockResolvedValue([limitUpItem()])
   })
 
   it('sorts boards by rise fall amount and turnover', () => {
@@ -195,6 +197,53 @@ describe('ranking helpers', () => {
     expect(wrapper.text()).not.toContain('白酒概念')
   })
 
+  it('shows the limit-up reason in the daily limit-up table', async () => {
+    apiMocks.getTHSLimitUpPool.mockResolvedValue([
+      limitUpItem({ reasonType: '低空经济', industry: '军工' }),
+    ])
+
+    const tableStub = defineComponent({
+      name: 'ATable',
+      props: {
+        columns: { type: Array, default: () => [] },
+        dataSource: { type: Array, default: () => [] },
+      },
+      template: `
+        <table>
+          <tbody>
+            <tr v-for="(row, index) in dataSource" :key="row.code">
+              <td v-for="column in columns" :key="column.key">
+                <slot name="bodyCell" :column="column" :record="row" :index="index" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      `,
+    })
+
+    const wrapper = mount(Rankings, {
+      global: {
+        stubs: {
+          AAlert: true,
+          AButton: true,
+          ACard: {
+            props: { title: { type: String, default: '' } },
+            template: '<section><h2>{{ title }}</h2><slot /></section>',
+          },
+          ASpace: { template: '<div><slot /></div>' },
+          ASegmented: true,
+          AStatistic: true,
+          ATable: tableStub,
+          ATag: { template: '<span><slot /></span>' },
+        },
+      },
+    })
+    await flushPromises()
+    await nextTick()
+
+    expect(wrapper.text()).toContain('低空经济')
+  })
+
   it('keeps successful limit-up rows visible when board rankings fail', async () => {
     apiMocks.getIndustryList.mockRejectedValue(new Error('industry failed'))
     apiMocks.getConceptList.mockRejectedValue(new Error('concept failed'))
@@ -241,7 +290,7 @@ describe('ranking helpers', () => {
     const conceptRequest = deferred<Board[]>()
     apiMocks.getIndustryList.mockReturnValue(industryRequest.promise)
     apiMocks.getConceptList.mockReturnValue(conceptRequest.promise)
-    apiMocks.getZTPool.mockResolvedValue([limitUpItem({ code: '000001', name: '平安银行' })])
+    apiMocks.getTHSLimitUpPool.mockResolvedValue([limitUpItem({ code: '000001', name: '平安银行' })])
 
     const tableStub = defineComponent({
       name: 'ATable',
@@ -284,11 +333,11 @@ describe('ranking helpers', () => {
 
   it('adds sortable columns to the limit-up table fields', async () => {
     const rows = [
-      limitUpItem({ code: '000001', name: '平安银行', amount: 200, continuousBoardCount: 1, firstBoardTime: '09:45:00', industry: '银行' }),
-      limitUpItem({ code: '000002', name: '万科A', amount: 300, continuousBoardCount: 3, firstBoardTime: '09:31:00', industry: '地产' }),
-      limitUpItem({ code: '000003', name: '中信证券', amount: 100, continuousBoardCount: 2, firstBoardTime: '10:02:00', industry: '证券' }),
+      limitUpItem({ code: '000001', name: '平安银行', amount: 200, continuousBoardCount: 1, firstBoardTime: '09:45:00', industry: '银行', reasonType: '银行' }),
+      limitUpItem({ code: '000002', name: '万科A', amount: 300, continuousBoardCount: 3, firstBoardTime: '09:31:00', industry: '地产', reasonType: '房地产' }),
+      limitUpItem({ code: '000003', name: '中信证券', amount: 100, continuousBoardCount: 2, firstBoardTime: '10:02:00', industry: '证券', reasonType: '券商' }),
     ]
-    apiMocks.getZTPool.mockResolvedValue(rows)
+    apiMocks.getTHSLimitUpPool.mockResolvedValue(rows)
 
     const tableStub = defineComponent({
       name: 'ATable',
@@ -323,14 +372,17 @@ describe('ranking helpers', () => {
     const boardCountSorter = columns.find((column) => column.key === 'continuousBoardCount')?.sorter
     const boardTimeSorter = columns.find((column) => column.key === 'boardTime')?.sorter
     const industrySorter = columns.find((column) => column.key === 'industry')?.sorter
+    const reasonSorter = columns.find((column) => column.key === 'reasonType')?.sorter
 
     expect(amountSorter).toEqual(expect.any(Function))
     expect(boardCountSorter).toEqual(expect.any(Function))
     expect(boardTimeSorter).toEqual(expect.any(Function))
     expect(industrySorter).toEqual(expect.any(Function))
+    expect(reasonSorter).toEqual(expect.any(Function))
     expect([...rows].sort(amountSorter).map((item) => item.code)).toEqual(['000003', '000001', '000002'])
     expect([...rows].sort(boardCountSorter).map((item) => item.code)).toEqual(['000001', '000003', '000002'])
     expect([...rows].sort(boardTimeSorter).map((item) => item.code)).toEqual(['000002', '000001', '000003'])
     expect([...rows].sort(industrySorter).map((item) => item.code)).toEqual(['000002', '000001', '000003'])
+    expect([...rows].sort(reasonSorter).map((item) => item.code)).toEqual(['000002', '000003', '000001'])
   })
 })
