@@ -2,58 +2,58 @@ package types
 
 // StockIssueInfo contains listing and IPO information for an A-share company.
 type StockIssueInfo struct {
-	FoundDate        *string
-	ListingDate      *string
-	IssueWay         string
-	ParValue         *float64
-	TotalIssueShares *float64
-	IssuePrice       *float64
-	TotalFunds       *float64
-	NetRaiseFunds    *float64
-	OpenPrice        *float64
-	ClosePrice       *float64
-	TurnoverRate     *float64
+	FoundDate        *string  `json:"foundDate"`
+	ListingDate      *string  `json:"listingDate"`
+	IssueWay         string   `json:"issueWay"`
+	ParValue         *float64 `json:"parValue"`
+	TotalIssueShares *float64 `json:"totalIssueShares"`
+	IssuePrice       *float64 `json:"issuePrice"`
+	TotalFunds       *float64 `json:"totalFunds"`
+	NetRaiseFunds    *float64 `json:"netRaiseFunds"`
+	OpenPrice        *float64 `json:"openPrice"`
+	ClosePrice       *float64 `json:"closePrice"`
+	TurnoverRate     *float64 `json:"turnoverRate"`
 }
 
 // StockProfile contains company profile and issue information.
 type StockProfile struct {
-	SecuCode                 string
-	Code                     string
-	Name                     string
-	OrgCode                  string
-	OrgName                  string
-	OrgNameEN                string
-	FormerName               string
-	ACode                    string
-	AName                    string
-	HCode                    string
-	HName                    string
-	SecurityType             string
-	Industry                 string
-	TradeMarket              string
-	CSRCIndustry             string
-	President                string
-	LegalRepresentative      string
-	Secretary                string
-	Chairman                 string
-	SecuritiesRepresentative string
-	IndependentDirectors     string
-	Tel                      string
-	Email                    string
-	Fax                      string
-	Website                  string
-	Address                  string
-	RegisteredAddress        string
-	Province                 string
-	AddressPostcode          string
-	RegisteredCapital        *float64
-	RegistrationNumber       string
-	EmployeeCount            *float64
-	LawFirm                  string
-	AccountingFirm           string
-	Profile                  string
-	BusinessScope            string
-	Issue                    StockIssueInfo
+	SecuCode                 string         `json:"secuCode"`
+	Code                     string         `json:"code"`
+	Name                     string         `json:"name"`
+	OrgCode                  string         `json:"orgCode"`
+	OrgName                  string         `json:"orgName"`
+	OrgNameEN                string         `json:"orgNameEn"`
+	FormerName               string         `json:"formerName"`
+	ACode                    string         `json:"aCode"`
+	AName                    string         `json:"aName"`
+	HCode                    string         `json:"hCode"`
+	HName                    string         `json:"hName"`
+	SecurityType             string         `json:"securityType"`
+	Industry                 string         `json:"industry"`
+	TradeMarket              string         `json:"tradeMarket"`
+	CSRCIndustry             string         `json:"csrcIndustry"`
+	President                string         `json:"president"`
+	LegalRepresentative      string         `json:"legalRepresentative"`
+	Secretary                string         `json:"secretary"`
+	Chairman                 string         `json:"chairman"`
+	SecuritiesRepresentative string         `json:"securitiesRepresentative"`
+	IndependentDirectors     string         `json:"independentDirectors"`
+	Tel                      string         `json:"tel"`
+	Email                    string         `json:"email"`
+	Fax                      string         `json:"fax"`
+	Website                  string         `json:"website"`
+	Address                  string         `json:"address"`
+	RegisteredAddress        string         `json:"registeredAddress"`
+	Province                 string         `json:"province"`
+	AddressPostcode          string         `json:"addressPostcode"`
+	RegisteredCapital        *float64       `json:"registeredCapital"`
+	RegistrationNumber       string         `json:"registrationNumber"`
+	EmployeeCount            *float64       `json:"employeeCount"`
+	LawFirm                  string         `json:"lawFirm"`
+	AccountingFirm           string         `json:"accountingFirm"`
+	Profile                  string         `json:"profile"`
+	BusinessScope            string         `json:"businessScope"`
+	Issue                    StockIssueInfo `json:"issue"`
 }
 
 // FinancialReportPeriod identifies the financial indicator report scope.
@@ -66,103 +66,103 @@ const (
 
 // FinancialIndicatorOptions configures stock financial indicator requests.
 type FinancialIndicatorOptions struct {
-	Period FinancialReportPeriod
+	Period FinancialReportPeriod `json:"period"`
 }
 
 // FinancialIndicator contains one stock financial indicator row.
 type FinancialIndicator struct {
-	SecuCode                  string
-	Code                      string
-	Name                      string
-	ReportDate                *string
-	ReportType                string
-	ReportDateName            string
-	NoticeDate                *string
-	UpdateDate                *string
-	Currency                  string
-	BasicEPS                  *float64
-	DeductBasicEPS            *float64
-	DilutedEPS                *float64
-	BPS                       *float64
-	CapitalReservePerShare    *float64
-	UnassignedProfitPerShare  *float64
-	OperatingCashFlowPerShare *float64
-	TotalRevenue              *float64
-	GrossProfit               *float64
-	ParentNetProfit           *float64
-	DeductParentNetProfit     *float64
-	TotalRevenueYoY           *float64
-	ParentNetProfitYoY        *float64
-	DeductParentNetProfitYoY  *float64
-	ROEWeighted               *float64
-	ROEDeductWeighted         *float64
-	ROA                       *float64
-	NetMargin                 *float64
-	GrossMargin               *float64
-	AssetLiabilityRatio       *float64
-	ROIC                      *float64
-	StaffCount                *float64
+	SecuCode                  string   `json:"secuCode"`
+	Code                      string   `json:"code"`
+	Name                      string   `json:"name"`
+	ReportDate                *string  `json:"reportDate"`
+	ReportType                string   `json:"reportType"`
+	ReportDateName            string   `json:"reportDateName"`
+	NoticeDate                *string  `json:"noticeDate"`
+	UpdateDate                *string  `json:"updateDate"`
+	Currency                  string   `json:"currency"`
+	BasicEPS                  *float64 `json:"basicEps"`
+	DeductBasicEPS            *float64 `json:"deductBasicEps"`
+	DilutedEPS                *float64 `json:"dilutedEps"`
+	BPS                       *float64 `json:"bps"`
+	CapitalReservePerShare    *float64 `json:"capitalReservePerShare"`
+	UnassignedProfitPerShare  *float64 `json:"unassignedProfitPerShare"`
+	OperatingCashFlowPerShare *float64 `json:"operatingCashFlowPerShare"`
+	TotalRevenue              *float64 `json:"totalRevenue"`
+	GrossProfit               *float64 `json:"grossProfit"`
+	ParentNetProfit           *float64 `json:"parentNetProfit"`
+	DeductParentNetProfit     *float64 `json:"deductParentNetProfit"`
+	TotalRevenueYoY           *float64 `json:"totalRevenueYoY"`
+	ParentNetProfitYoY        *float64 `json:"parentNetProfitYoY"`
+	DeductParentNetProfitYoY  *float64 `json:"deductParentNetProfitYoY"`
+	ROEWeighted               *float64 `json:"roeWeighted"`
+	ROEDeductWeighted         *float64 `json:"roeDeductWeighted"`
+	ROA                       *float64 `json:"roa"`
+	NetMargin                 *float64 `json:"netMargin"`
+	GrossMargin               *float64 `json:"grossMargin"`
+	AssetLiabilityRatio       *float64 `json:"assetLiabilityRatio"`
+	ROIC                      *float64 `json:"roic"`
+	StaffCount                *float64 `json:"staffCount"`
 }
 
 // AnnouncementOptions configures stock announcement list requests.
 type AnnouncementOptions struct {
-	PageSize  int
-	PageIndex int
+	PageSize  int `json:"pageSize"`
+	PageIndex int `json:"pageIndex"`
 }
 
 // StockAnnouncementCode identifies a security mentioned by an announcement.
 type StockAnnouncementCode struct {
-	AnnouncementType string
-	InnerCode        string
-	MarketCode       string
-	ShortName        string
-	StockCode        string
+	AnnouncementType string `json:"announcementType"`
+	InnerCode        string `json:"innerCode"`
+	MarketCode       string `json:"marketCode"`
+	ShortName        string `json:"shortName"`
+	StockCode        string `json:"stockCode"`
 }
 
 // StockAnnouncementColumn identifies the announcement category.
 type StockAnnouncementColumn struct {
-	Code string
-	Name string
+	Code string `json:"code"`
+	Name string `json:"name"`
 }
 
 // StockAnnouncement contains one stock announcement list row.
 type StockAnnouncement struct {
-	ArtCode     string
-	Title       string
-	TitleCH     string
-	TitleEN     string
-	NoticeDate  *string
-	DisplayTime *string
-	SortDate    *string
-	Columns     []StockAnnouncementColumn
-	Codes       []StockAnnouncementCode
+	ArtCode     string                    `json:"artCode"`
+	Title       string                    `json:"title"`
+	TitleCH     string                    `json:"titleCh"`
+	TitleEN     string                    `json:"titleEn"`
+	NoticeDate  *string                   `json:"noticeDate"`
+	DisplayTime *string                   `json:"displayTime"`
+	SortDate    *string                   `json:"sortDate"`
+	Columns     []StockAnnouncementColumn `json:"columns"`
+	Codes       []StockAnnouncementCode   `json:"codes"`
 }
 
 // StockAnnouncementResult contains paginated stock announcement rows.
 type StockAnnouncementResult struct {
-	List      []StockAnnouncement
-	PageIndex int
-	PageSize  int
-	Total     int
+	List      []StockAnnouncement `json:"list"`
+	PageIndex int                 `json:"pageIndex"`
+	PageSize  int                 `json:"pageSize"`
+	Total     int                 `json:"total"`
 }
 
 // StockAnnouncementAttachment contains one announcement attachment.
 type StockAnnouncementAttachment struct {
-	URL  string
-	Type string
-	Size *float64
-	Seq  *float64
+	URL  string   `json:"url"`
+	Type string   `json:"type"`
+	Size *float64 `json:"size"`
+	Seq  *float64 `json:"seq"`
 }
 
 // StockAnnouncementDetail contains announcement body text and attachments.
 type StockAnnouncementDetail struct {
-	ArtCode       string
-	Title         string
-	NoticeDate    *string
-	AttachURL     string
-	AttachURLWeb  string
-	AttachSize    string
-	AttachType    string
-	NoticeContent string
-	Attachments   []StockAnnouncementAttachment
+	ArtCode       string                        `json:"artCode"`
+	Title         string                        `json:"title"`
+	NoticeDate    *string                       `json:"noticeDate"`
+	AttachURL     string                        `json:"attachUrl"`
+	AttachURLWeb  string                        `json:"attachUrlWeb"`
+	AttachSize    string                        `json:"attachSize"`
+	AttachType    string                        `json:"attachType"`
+	NoticeContent string                        `json:"noticeContent"`
+	Attachments   []StockAnnouncementAttachment `json:"attachments"`
 }

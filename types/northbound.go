@@ -32,69 +32,69 @@ const (
 
 // NorthboundMinuteItem is a northbound or southbound intraday fund-flow row.
 type NorthboundMinuteItem struct {
-	Date              string
-	Time              string
-	ShanghaiNetInflow *float64
-	ShenzhenNetInflow *float64
-	TotalNetInflow    *float64
+	Date              string   `json:"date"`
+	Time              string   `json:"time"`
+	ShanghaiNetInflow *float64 `json:"shanghaiNetInflow"`
+	ShenzhenNetInflow *float64 `json:"shenzhenNetInflow"`
+	TotalNetInflow    *float64 `json:"totalNetInflow"`
 }
 
 // NorthboundFlowSummary is a Shanghai/Shenzhen/HK connect flow summary row.
 type NorthboundFlowSummary struct {
-	Date               string
-	Type               string
-	BoardName          string
-	Direction          string
-	Status             string
-	NetBuyAmount       *float64
-	NetInflow          *float64
-	RemainAmount       *float64
-	UpCount            *float64
-	FlatCount          *float64
-	DownCount          *float64
-	IndexCode          string
-	IndexName          string
-	IndexChangePercent *float64
+	Date               string   `json:"date"`
+	Type               string   `json:"type"`
+	BoardName          string   `json:"boardName"`
+	Direction          string   `json:"direction"`
+	Status             string   `json:"status"`
+	NetBuyAmount       *float64 `json:"netBuyAmount"`
+	NetInflow          *float64 `json:"netInflow"`
+	RemainAmount       *float64 `json:"remainAmount"`
+	UpCount            *float64 `json:"upCount"`
+	FlatCount          *float64 `json:"flatCount"`
+	DownCount          *float64 `json:"downCount"`
+	IndexCode          string   `json:"indexCode"`
+	IndexName          string   `json:"indexName"`
+	IndexChangePercent *float64 `json:"indexChangePercent"`
 }
 
 // NorthboundHoldingRankItem is a northbound holding ranking row.
 type NorthboundHoldingRankItem struct {
-	Date                  string
-	Code                  string
-	Name                  string
-	Close                 *float64
-	ChangePercent         *float64
-	HoldShares            *float64
-	HoldMarketValue       *float64
-	HoldRatioFloat        *float64
-	HoldRatioTotal        *float64
-	AddShares             *float64
-	AddMarketValue        *float64
-	AddMarketValuePercent *float64
-	Sector                string
+	Date                  string   `json:"date"`
+	Code                  string   `json:"code"`
+	Name                  string   `json:"name"`
+	Close                 *float64 `json:"close"`
+	ChangePercent         *float64 `json:"changePercent"`
+	HoldShares            *float64 `json:"holdShares"`
+	HoldMarketValue       *float64 `json:"holdMarketValue"`
+	HoldRatioFloat        *float64 `json:"holdRatioFloat"`
+	HoldRatioTotal        *float64 `json:"holdRatioTotal"`
+	AddShares             *float64 `json:"addShares"`
+	AddMarketValue        *float64 `json:"addMarketValue"`
+	AddMarketValuePercent *float64 `json:"addMarketValuePercent"`
+	Sector                string   `json:"sector"`
 }
 
 // NorthboundHistoryItem is a northbound or southbound daily fund-flow row.
 type NorthboundHistoryItem struct {
-	Date                  string
-	NetBuyAmount          *float64
-	BuyAmount             *float64
-	SellAmount            *float64
-	AccNetBuyAmount       *float64
-	NetInflow             *float64
-	RemainAmount          *float64
-	TopStockCode          *string
-	TopStockName          *string
-	TopStockChangePercent *float64
+	Date                  string   `json:"date"`
+	NetBuyAmount          *float64 `json:"netBuyAmount"`
+	BuyAmount             *float64 `json:"buyAmount"`
+	SellAmount            *float64 `json:"sellAmount"`
+	AccNetBuyAmount       *float64 `json:"accNetBuyAmount"`
+	NetInflow             *float64 `json:"netInflow"`
+	RemainAmount          *float64 `json:"remainAmount"`
+	TopStockCode          *string  `json:"topStockCode"`
+	TopStockName          *string  `json:"topStockName"`
+	TopStockChangePercent *float64 `json:"topStockChangePercent"`
 }
 
 // NorthboundIndividualItem is a stock's northbound holding history row.
 type NorthboundIndividualItem struct {
-	Date            string
-	HoldShares      *float64
-	HoldMarketValue *float64
-	HoldRatioFloat  *float64
-	HoldRatioTotal  *float64
-	Close           *float64
-	ChangePercent   *float64
+	Date            string   `json:"date"`
+	HoldShares      *float64 `json:"holdShares"`
+	HoldMarketValue *float64 `json:"holdMarketValue"`
+	HoldRatioFloat  *float64 `json:"holdRatioFloat"`
+	HoldRatioTotal  *float64 `json:"holdRatioTotal"`
+	Close           *float64 `json:"close"`
+	ChangePercent   *float64 `json:"changePercent"`
 }

@@ -4,17 +4,17 @@ import "time"
 
 // Kline is a normalized OHLCV bar.
 type Kline struct {
-	Code      string
-	Market    Market
-	Time      time.Time
-	Open      float64
-	High      float64
-	Low       float64
-	Close     float64
-	Volume    float64
-	Amount    float64
-	Turnover  float64
-	Amplitude float64
+	Code      string    `json:"code"`
+	Market    Market    `json:"market"`
+	Time      time.Time `json:"time"`
+	Open      float64   `json:"open"`
+	High      float64   `json:"high"`
+	Low       float64   `json:"low"`
+	Close     float64   `json:"close"`
+	Volume    float64   `json:"volume"`
+	Amount    float64   `json:"amount"`
+	Turnover  float64   `json:"turnover"`
+	Amplitude float64   `json:"amplitude"`
 }
 
 // AnyHistoryKline is the common interface implemented by CN/HK/US history rows.
@@ -27,48 +27,48 @@ type AnyHistoryKline interface {
 
 // HistoryKline is a CN historical daily/weekly/monthly K-line row.
 type HistoryKline struct {
-	Date          string
-	Timestamp     *int64
-	TZ            string
-	Code          string
-	Open          *float64
-	Close         *float64
-	High          *float64
-	Low           *float64
-	Volume        *float64
-	Amount        *float64
-	Amplitude     *float64
-	ChangePercent *float64
-	Change        *float64
-	TurnoverRate  *float64
+	Date          string   `json:"date"`
+	Timestamp     *int64   `json:"timestamp"`
+	TZ            string   `json:"tz"`
+	Code          string   `json:"code"`
+	Open          *float64 `json:"open"`
+	Close         *float64 `json:"close"`
+	High          *float64 `json:"high"`
+	Low           *float64 `json:"low"`
+	Volume        *float64 `json:"volume"`
+	Amount        *float64 `json:"amount"`
+	Amplitude     *float64 `json:"amplitude"`
+	ChangePercent *float64 `json:"changePercent"`
+	Change        *float64 `json:"change"`
+	TurnoverRate  *float64 `json:"turnoverRate"`
 }
 
 func (HistoryKline) isAnyHistoryKline() {}
 
 // ForeignHistoryKline is the common HK/US historical daily/weekly/monthly K-line row.
 type ForeignHistoryKline struct {
-	Date          string
-	Timestamp     *int64
-	TZ            string
-	Code          string
-	Name          string
-	Open          *float64
-	Close         *float64
-	High          *float64
-	Low           *float64
-	Volume        *float64
-	Amount        *float64
-	Amplitude     *float64
-	ChangePercent *float64
-	Change        *float64
-	TurnoverRate  *float64
+	Date          string   `json:"date"`
+	Timestamp     *int64   `json:"timestamp"`
+	TZ            string   `json:"tz"`
+	Code          string   `json:"code"`
+	Name          string   `json:"name"`
+	Open          *float64 `json:"open"`
+	Close         *float64 `json:"close"`
+	High          *float64 `json:"high"`
+	Low           *float64 `json:"low"`
+	Volume        *float64 `json:"volume"`
+	Amount        *float64 `json:"amount"`
+	Amplitude     *float64 `json:"amplitude"`
+	ChangePercent *float64 `json:"changePercent"`
+	Change        *float64 `json:"change"`
+	TurnoverRate  *float64 `json:"turnoverRate"`
 }
 
 // HKHistoryKline is a Hong Kong historical daily/weekly/monthly K-line row.
 type HKHistoryKline struct {
 	ForeignHistoryKline
-	Currency string
-	LotSize  *float64
+	Currency string   `json:"currency"`
+	LotSize  *float64 `json:"lotSize"`
 }
 
 func (HKHistoryKline) isAnyHistoryKline() {}
@@ -76,115 +76,115 @@ func (HKHistoryKline) isAnyHistoryKline() {}
 // USHistoryKline is a US historical daily/weekly/monthly K-line row.
 type USHistoryKline struct {
 	ForeignHistoryKline
-	Currency string
+	Currency string `json:"currency"`
 }
 
 func (USHistoryKline) isAnyHistoryKline() {}
 
 // ForeignMinuteTimeline is the common HK/US 1-minute intraday timeline row.
 type ForeignMinuteTimeline struct {
-	Time      string
-	Timestamp *int64
-	TZ        string
-	Code      string
-	Open      *float64
-	Close     *float64
-	High      *float64
-	Low       *float64
-	Volume    *float64
-	Amount    *float64
-	AvgPrice  *float64
+	Time      string   `json:"time"`
+	Timestamp *int64   `json:"timestamp"`
+	TZ        string   `json:"tz"`
+	Code      string   `json:"code"`
+	Open      *float64 `json:"open"`
+	Close     *float64 `json:"close"`
+	High      *float64 `json:"high"`
+	Low       *float64 `json:"low"`
+	Volume    *float64 `json:"volume"`
+	Amount    *float64 `json:"amount"`
+	AvgPrice  *float64 `json:"avgPrice"`
 }
 
 // ForeignMinuteKline is the common HK/US 5/15/30/60-minute K-line row.
 type ForeignMinuteKline struct {
-	Time          string
-	Timestamp     *int64
-	TZ            string
-	Code          string
-	Open          *float64
-	Close         *float64
-	High          *float64
-	Low           *float64
-	Volume        *float64
-	Amount        *float64
-	Amplitude     *float64
-	ChangePercent *float64
-	Change        *float64
-	TurnoverRate  *float64
+	Time          string   `json:"time"`
+	Timestamp     *int64   `json:"timestamp"`
+	TZ            string   `json:"tz"`
+	Code          string   `json:"code"`
+	Open          *float64 `json:"open"`
+	Close         *float64 `json:"close"`
+	High          *float64 `json:"high"`
+	Low           *float64 `json:"low"`
+	Volume        *float64 `json:"volume"`
+	Amount        *float64 `json:"amount"`
+	Amplitude     *float64 `json:"amplitude"`
+	ChangePercent *float64 `json:"changePercent"`
+	Change        *float64 `json:"change"`
+	TurnoverRate  *float64 `json:"turnoverRate"`
 }
 
 // HKMinuteTimeline is a Hong Kong 1-minute intraday timeline row.
 type HKMinuteTimeline struct {
 	ForeignMinuteTimeline
-	Currency string
+	Currency string `json:"currency"`
 }
 
 // HKMinuteKline is a Hong Kong 5/15/30/60-minute K-line row.
 type HKMinuteKline struct {
 	ForeignMinuteKline
-	Currency string
+	Currency string `json:"currency"`
 }
 
 // HKMinuteKlineResult contains either HK 1-minute timeline rows or minute K-line rows.
 type HKMinuteKlineResult struct {
-	Timeline []HKMinuteTimeline
-	Klines   []HKMinuteKline
+	Timeline []HKMinuteTimeline `json:"timeline"`
+	Klines   []HKMinuteKline    `json:"klines"`
 }
 
 // USMinuteTimeline is a US 1-minute intraday timeline row.
 type USMinuteTimeline struct {
 	ForeignMinuteTimeline
-	Currency string
+	Currency string `json:"currency"`
 }
 
 // USMinuteKline is a US 5/15/30/60-minute K-line row.
 type USMinuteKline struct {
 	ForeignMinuteKline
-	Currency string
+	Currency string `json:"currency"`
 }
 
 // USMinuteKlineResult contains either US 1-minute timeline rows or minute K-line rows.
 type USMinuteKlineResult struct {
-	Timeline []USMinuteTimeline
-	Klines   []USMinuteKline
+	Timeline []USMinuteTimeline `json:"timeline"`
+	Klines   []USMinuteKline    `json:"klines"`
 }
 
 // MinuteTimeline is a CN 1-minute intraday timeline row.
 type MinuteTimeline struct {
-	Time      string
-	Timestamp *int64
-	TZ        string
-	Code      string
-	Open      *float64
-	Close     *float64
-	High      *float64
-	Low       *float64
-	Volume    *float64
-	Amount    *float64
-	AvgPrice  *float64
+	Time      string   `json:"time"`
+	Timestamp *int64   `json:"timestamp"`
+	TZ        string   `json:"tz"`
+	Code      string   `json:"code"`
+	Open      *float64 `json:"open"`
+	Close     *float64 `json:"close"`
+	High      *float64 `json:"high"`
+	Low       *float64 `json:"low"`
+	Volume    *float64 `json:"volume"`
+	Amount    *float64 `json:"amount"`
+	AvgPrice  *float64 `json:"avgPrice"`
 }
 
 // MinuteKline is a CN 5/15/30/60-minute K-line row.
 type MinuteKline struct {
-	Time          string
-	Timestamp     *int64
-	TZ            string
-	Code          string
-	Open          *float64
-	Close         *float64
-	High          *float64
-	Low           *float64
-	Volume        *float64
-	Amount        *float64
-	Amplitude     *float64
-	ChangePercent *float64
-	Change        *float64
-	TurnoverRate  *float64
+	Time          string   `json:"time"`
+	Timestamp     *int64   `json:"timestamp"`
+	TZ            string   `json:"tz"`
+	Code          string   `json:"code"`
+	Open          *float64 `json:"open"`
+	Close         *float64 `json:"close"`
+	High          *float64 `json:"high"`
+	Low           *float64 `json:"low"`
+	Volume        *float64 `json:"volume"`
+	Amount        *float64 `json:"amount"`
+	Amplitude     *float64 `json:"amplitude"`
+	ChangePercent *float64 `json:"changePercent"`
+	Change        *float64 `json:"change"`
+	TurnoverRate  *float64 `json:"turnoverRate"`
 }
 
 // MinuteKlineResult contains either 1-minute timeline rows or minute K-line rows.
 type MinuteKlineResult struct {
-	Timeline []MinuteTimeline
-	Klines   []MinuteKline
+	Timeline []MinuteTimeline `json:"timeline"`
+	Klines   []MinuteKline    `json:"klines"`
 }

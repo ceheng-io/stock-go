@@ -14,25 +14,25 @@ const (
 
 // ZTPoolItem is an Eastmoney limit-up pool row.
 type ZTPoolItem struct {
-	Code                 string
-	Name                 string
-	Price                *float64
-	ChangePercent        *float64
-	LimitPrice           *float64
-	Amount               *float64
-	FloatMarketValue     *float64
-	TotalMarketValue     *float64
-	TurnoverRate         *float64
-	ContinuousBoardCount *float64
-	FirstBoardTime       *string
-	LastBoardTime        *string
-	BoardAmount          *float64
-	SealAmount           *float64
-	FailedCount          *float64
-	Industry             string
-	ZTStatistics         string
-	Amplitude            *float64
-	Speed                *float64
+	Code                 string   `json:"code"`
+	Name                 string   `json:"name"`
+	Price                *float64 `json:"price"`
+	ChangePercent        *float64 `json:"changePercent"`
+	LimitPrice           *float64 `json:"limitPrice"`
+	Amount               *float64 `json:"amount"`
+	FloatMarketValue     *float64 `json:"floatMarketValue"`
+	TotalMarketValue     *float64 `json:"totalMarketValue"`
+	TurnoverRate         *float64 `json:"turnoverRate"`
+	ContinuousBoardCount *float64 `json:"continuousBoardCount"`
+	FirstBoardTime       *string  `json:"firstBoardTime"`
+	LastBoardTime        *string  `json:"lastBoardTime"`
+	BoardAmount          *float64 `json:"boardAmount"`
+	SealAmount           *float64 `json:"sealAmount"`
+	FailedCount          *float64 `json:"failedCount"`
+	Industry             string   `json:"industry"`
+	ZTStatistics         string   `json:"ztStatistics"`
+	Amplitude            *float64 `json:"amplitude"`
+	Speed                *float64 `json:"speed"`
 }
 
 // StockChangeType identifies an Eastmoney intraday stock change category.
@@ -65,24 +65,24 @@ const (
 
 // StockChangeItem is an intraday stock change row.
 type StockChangeItem struct {
-	Time            string
-	Code            string
-	Name            string
-	ChangeType      StockChangeType
-	ChangeTypeLabel string
-	Info            string
+	Time            string          `json:"time"`
+	Code            string          `json:"code"`
+	Name            string          `json:"name"`
+	ChangeType      StockChangeType `json:"changeType"`
+	ChangeTypeLabel string          `json:"changeTypeLabel"`
+	Info            string          `json:"info"`
 }
 
 // BoardChangeItem is a board change summary row.
 type BoardChangeItem struct {
-	Name                   string
-	ChangePercent          *float64
-	MainNetInflow          *float64
-	TotalChangeCount       *float64
-	TopStockCode           string
-	TopStockName           string
-	TopStockDirection      string
-	ChangeTypeDistribution map[string]float64
+	Name                   string             `json:"name"`
+	ChangePercent          *float64           `json:"changePercent"`
+	MainNetInflow          *float64           `json:"mainNetInflow"`
+	TotalChangeCount       *float64           `json:"totalChangeCount"`
+	TopStockCode           string             `json:"topStockCode"`
+	TopStockName           string             `json:"topStockName"`
+	TopStockDirection      string             `json:"topStockDirection"`
+	ChangeTypeDistribution map[string]float64 `json:"changeTypeDistribution"`
 }
 
 // THSLimitUpOrderField identifies a Tonghuashun limit-up pool sort field.
@@ -104,79 +104,79 @@ const (
 
 // THSLimitUpPoolOptions controls Tonghuashun limit-up pool requests.
 type THSLimitUpPoolOptions struct {
-	Date       string
-	Page       int
-	Limit      int
-	Filter     string
-	OrderField THSLimitUpOrderField
-	OrderType  THSLimitUpOrderType
+	Date       string               `json:"date"`
+	Page       int                  `json:"page"`
+	Limit      int                  `json:"limit"`
+	Filter     string               `json:"filter"`
+	OrderField THSLimitUpOrderField `json:"orderField"`
+	OrderType  THSLimitUpOrderType  `json:"orderType"`
 }
 
 // THSLimitUpPoolResult is a Tonghuashun limit-up pool page.
 type THSLimitUpPoolResult struct {
-	Page           THSLimitUpPage
-	Items          []THSLimitUpItem
-	LimitUpCount   THSLimitStatGroup
-	LimitDownCount THSLimitStatGroup
-	Date           string
-	Message        string
-	TradeStatus    THSTradeStatus
+	Page           THSLimitUpPage    `json:"page"`
+	Items          []THSLimitUpItem  `json:"items"`
+	LimitUpCount   THSLimitStatGroup `json:"limitUpCount"`
+	LimitDownCount THSLimitStatGroup `json:"limitDownCount"`
+	Date           string            `json:"date"`
+	Message        string            `json:"message"`
+	TradeStatus    THSTradeStatus    `json:"tradeStatus"`
 }
 
 // THSLimitUpPage describes Tonghuashun pagination metadata.
 type THSLimitUpPage struct {
-	Limit int
-	Total int
-	Count int
-	Page  int
+	Limit int `json:"limit"`
+	Total int `json:"total"`
+	Count int `json:"count"`
+	Page  int `json:"page"`
 }
 
 // THSLimitStatGroup contains today's and yesterday's up/down limit statistics.
 type THSLimitStatGroup struct {
-	Today     THSLimitStat
-	Yesterday THSLimitStat
+	Today     THSLimitStat `json:"today"`
+	Yesterday THSLimitStat `json:"yesterday"`
 }
 
 // THSLimitStat describes Tonghuashun limit-up/down statistics.
 type THSLimitStat struct {
-	Num        int
-	HistoryNum int
-	Rate       *float64
-	OpenNum    int
+	Num        int      `json:"num"`
+	HistoryNum int      `json:"historyNum"`
+	Rate       *float64 `json:"rate"`
+	OpenNum    int      `json:"openNum"`
 }
 
 // THSTradeStatus describes Tonghuashun market status metadata.
 type THSTradeStatus struct {
-	ID        string
-	Name      string
-	StartTime string
-	EndTime   string
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	StartTime string `json:"startTime"`
+	EndTime   string `json:"endTime"`
 }
 
 // THSLimitUpItem is a Tonghuashun limit-up pool row.
 type THSLimitUpItem struct {
-	Code                 string
-	Name                 string
-	Latest               *float64
-	ChangeRate           *float64
-	FirstLimitUpTime     *int64
-	FirstLimitUpTimeText string
-	LastLimitUpTime      *int64
-	LastLimitUpTimeText  string
-	OpenNum              *int
-	LimitUpType          string
-	OrderVolume          *float64
-	OrderAmount          *float64
-	TurnoverRate         *float64
-	CurrencyValue        *float64
-	ReasonType           string
-	HighDays             string
-	HighDaysValue        *int
-	ChangeTag            string
-	MarketType           string
-	MarketID             *int
-	IsNew                *int
-	IsAgainLimit         *int
-	LimitUpSuccessRate   *float64
-	TimePreview          []float64
+	Code                 string    `json:"code"`
+	Name                 string    `json:"name"`
+	Latest               *float64  `json:"latest"`
+	ChangeRate           *float64  `json:"changeRate"`
+	FirstLimitUpTime     *int64    `json:"firstLimitUpTime"`
+	FirstLimitUpTimeText string    `json:"firstLimitUpTimeText"`
+	LastLimitUpTime      *int64    `json:"lastLimitUpTime"`
+	LastLimitUpTimeText  string    `json:"lastLimitUpTimeText"`
+	OpenNum              *int      `json:"openNum"`
+	LimitUpType          string    `json:"limitUpType"`
+	OrderVolume          *float64  `json:"orderVolume"`
+	OrderAmount          *float64  `json:"orderAmount"`
+	TurnoverRate         *float64  `json:"turnoverRate"`
+	CurrencyValue        *float64  `json:"currencyValue"`
+	ReasonType           string    `json:"reasonType"`
+	HighDays             string    `json:"highDays"`
+	HighDaysValue        *int      `json:"highDaysValue"`
+	ChangeTag            string    `json:"changeTag"`
+	MarketType           string    `json:"marketType"`
+	MarketID             *int      `json:"marketId"`
+	IsNew                *int      `json:"isNew"`
+	IsAgainLimit         *int      `json:"isAgainLimit"`
+	LimitUpSuccessRate   *float64  `json:"limitUpSuccessRate"`
+	TimePreview          []float64 `json:"timePreview"`
 }
