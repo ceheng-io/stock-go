@@ -1,20 +1,18 @@
 package types
 
-import "time"
-
 // Kline is a normalized OHLCV bar.
 type Kline struct {
-	Code      string    `json:"code"`
-	Market    Market    `json:"market"`
-	Time      time.Time `json:"time"`
-	Open      float64   `json:"open"`
-	High      float64   `json:"high"`
-	Low       float64   `json:"low"`
-	Close     float64   `json:"close"`
-	Volume    float64   `json:"volume"`
-	Amount    float64   `json:"amount"`
-	Turnover  float64   `json:"turnover"`
-	Amplitude float64   `json:"amplitude"`
+	Code      string  `json:"code"`
+	Market    Market  `json:"market"`
+	Time      int64   `json:"time"`
+	Open      float64 `json:"open"`
+	High      float64 `json:"high"`
+	Low       float64 `json:"low"`
+	Close     float64 `json:"close"`
+	Volume    float64 `json:"volume"`
+	Amount    float64 `json:"amount"`
+	Turnover  float64 `json:"turnover"`
+	Amplitude float64 `json:"amplitude"`
 }
 
 // AnyHistoryKline is the common interface implemented by CN/HK/US history rows.
