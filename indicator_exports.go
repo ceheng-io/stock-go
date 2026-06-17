@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/indicators"
+import "github.com/ceheng-io/stock-go/indicators"
 
 type IndicatorValue = indicators.Value
 type OHLCV = indicators.OHLCV

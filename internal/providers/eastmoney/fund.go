@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ceheng.io/stock-go/internal/core"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // FundClient is the minimal client interface required by Eastmoney fund providers.

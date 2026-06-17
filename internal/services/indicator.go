@@ -3,10 +3,10 @@ package services
 import (
 	"context"
 
-	"github.com/ceheng.io/stock-go/indicators"
-	"github.com/ceheng.io/stock-go/internal/providers/eastmoney"
-	"github.com/ceheng.io/stock-go/symbols"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/indicators"
+	"github.com/ceheng-io/stock-go/internal/providers/eastmoney"
+	"github.com/ceheng-io/stock-go/symbols"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // IndicatorKlineService 是 IndicatorService 依赖的 K 线接口。

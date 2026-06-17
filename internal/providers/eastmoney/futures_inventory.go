@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // FuturesInventoryOptions 配置国内期货库存查询。

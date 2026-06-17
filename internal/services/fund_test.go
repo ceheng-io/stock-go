@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ceheng.io/stock-go/internal/providers/eastmoney"
+	"github.com/ceheng-io/stock-go/internal/providers/eastmoney"
 )
 
 type fundClientStub struct {

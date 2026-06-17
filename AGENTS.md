@@ -9,7 +9,7 @@
 ## 项目信息
 
 - 项目中文名为“策衡”。
-- Go module 为 `github.com/ceheng.io/stock-go`。
+- Go module 为 `github.com/ceheng-io/stock-go`。
 - 根包名建议为 `stock`。
 - 技术标识和 CLI 命令名为 `ceheng`。
 

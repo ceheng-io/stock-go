@@ -5,7 +5,7 @@ import (
 	"context"
 	stderrors "errors"
 
-	stock "github.com/ceheng.io/stock-go"
+	stock "github.com/ceheng-io/stock-go"
 )
 
 type ErrorCode = stock.ErrorCode

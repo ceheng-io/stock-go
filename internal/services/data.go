@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 
-	"github.com/ceheng.io/stock-go/internal/providers/eastmoney"
-	"github.com/ceheng.io/stock-go/internal/providers/tencent"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/providers/eastmoney"
+	"github.com/ceheng-io/stock-go/internal/providers/tencent"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // DataClient 是 DataService 需要的请求客户端接口。

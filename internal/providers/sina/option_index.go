@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // IndexOptionProduct 是中金所股指期权产品。

@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ceheng.io/stock-go/symbols"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/symbols"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 const (

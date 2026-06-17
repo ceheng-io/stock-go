@@ -3,7 +3,7 @@ package symbols
 import (
 	"fmt"
 
-	"github.com/ceheng.io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/core"
 )
 
 var exchangeToSecidPrefix = map[Exchange]string{

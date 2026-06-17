@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 
-	"github.com/ceheng.io/stock-go/internal/providers/eastmoney"
-	"github.com/ceheng.io/stock-go/internal/providers/sina"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/providers/eastmoney"
+	"github.com/ceheng-io/stock-go/internal/providers/sina"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // OptionsClient 是 OptionsService 需要的请求客户端接口。

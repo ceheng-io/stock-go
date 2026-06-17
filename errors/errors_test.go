@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	stock "github.com/ceheng.io/stock-go"
+	stock "github.com/ceheng-io/stock-go"
 )
 
 func TestErrorsSubpackageConstructorsDelegateToRoot(t *testing.T) {
@@ -53,7 +53,7 @@ func TestNormalizeRequestErrorMapsCommonRequestErrors(t *testing.T) {
 	timeout := NormalizeRequestError(context.DeadlineExceeded, ErrorContext{
 		Provider: stock.ProviderEastmoney,
 		URL:      "https://push2.eastmoney.com/api",
-		Timeout: 1000,
+		Timeout:  1000,
 	})
 	if timeout.Code != CodeTimeout || timeout.Provider != stock.ProviderEastmoney || timeout.Details["timeout"] != 1000 {
 		t.Fatalf("timeout error = %+v", timeout)

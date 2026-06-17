@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ceheng.io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/core"
 )
 
 // MarketStatus 是市场实时状态。

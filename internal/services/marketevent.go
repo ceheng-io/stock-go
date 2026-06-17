@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 
-	"github.com/ceheng.io/stock-go/internal/providers/eastmoney"
-	"github.com/ceheng.io/stock-go/internal/providers/ths"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/providers/eastmoney"
+	"github.com/ceheng-io/stock-go/internal/providers/ths"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // MarketEventClient is the request client interface required by MarketEventService.

@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/screener"
+import "github.com/ceheng-io/stock-go/screener"
 
 type SortDirection = screener.SortDirection
 

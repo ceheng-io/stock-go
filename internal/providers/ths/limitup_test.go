@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ceheng.io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/core"
 )
 
 type fakeLimitUpClient struct {

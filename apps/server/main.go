@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	stock "github.com/ceheng.io/stock-go"
+	stock "github.com/ceheng-io/stock-go"
 )
 
 func main() {

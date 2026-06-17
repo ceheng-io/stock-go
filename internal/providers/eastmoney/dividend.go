@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // DividendClient is the minimal client interface required by dividend providers.

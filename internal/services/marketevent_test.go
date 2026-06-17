@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/ceheng.io/stock-go/internal/providers/eastmoney"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/providers/eastmoney"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 type marketEventClientStub struct {

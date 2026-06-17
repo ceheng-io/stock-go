@@ -5,7 +5,7 @@
 它面向 Go 服务端、命令行工具、数据任务和后续 Web/API 应用，提供 A 股、港股、美股、公募基金、期货、期权、资金流、北向资金、龙虎榜、大宗交易、融资融券、涨停池等公开行情数据能力。
 
 ```go
-module github.com/ceheng.io/stock-go
+module github.com/ceheng-io/stock-go
 ```
 
 当前阶段已经按 SDK v0.1 收口；CLI、MCP、后端 API 和 Web 前端属于后续应用层。收口边界见 [docs/sdk-v0.1-acceptance.md](docs/sdk-v0.1-acceptance.md)。
@@ -27,11 +27,11 @@ module github.com/ceheng.io/stock-go
 ## 安装
 
 ```bash
-go get github.com/ceheng.io/stock-go
+go get github.com/ceheng-io/stock-go
 ```
 
 ```go
-import stock "github.com/ceheng.io/stock-go"
+import stock "github.com/ceheng-io/stock-go"
 ```
 
 更完整的接入说明、场景示例、错误处理、请求治理和生产注意事项见 [docs/usage.md](docs/usage.md)。
@@ -46,7 +46,7 @@ import (
 	"fmt"
 	"time"
 
-	stock "github.com/ceheng.io/stock-go"
+	stock "github.com/ceheng-io/stock-go"
 )
 
 func main() {
@@ -209,10 +209,10 @@ fmt.Println(len(futures), len(etfMinute))
 
 ```go
 import (
-	stock "github.com/ceheng.io/stock-go"
-	"github.com/ceheng.io/stock-go/indicators"
-	"github.com/ceheng.io/stock-go/screener"
-	"github.com/ceheng.io/stock-go/signals"
+	stock "github.com/ceheng-io/stock-go"
+	"github.com/ceheng-io/stock-go/indicators"
+	"github.com/ceheng-io/stock-go/screener"
+	"github.com/ceheng-io/stock-go/signals"
 )
 
 macd := indicators.CalcMACD(closes, indicators.MACDOptions{})

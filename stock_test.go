@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ceheng.io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/core"
 )
 
 func TestWithProxyPoolStoresURLs(t *testing.T) {

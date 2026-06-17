@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	domaintypes "github.com/ceheng.io/stock-go/types"
+	domaintypes "github.com/ceheng-io/stock-go/types"
 )
 
 // GetFullQuotes fetches detailed CN quotes.

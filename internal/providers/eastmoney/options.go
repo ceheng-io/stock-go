@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // CFFEXOptionQuotesOptions 配置中金所期权实时行情查询。

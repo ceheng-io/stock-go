@@ -7,8 +7,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ceheng.io/stock-go/internal/core"
-	"github.com/ceheng.io/stock-go/internal/providers/tencent"
+	"github.com/ceheng-io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/providers/tencent"
 )
 
 type quoteClientStub struct {

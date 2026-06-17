@@ -4,9 +4,9 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/ceheng.io/stock-go/internal/core"
-	"github.com/ceheng.io/stock-go/timeutil"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/timeutil"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // QuoteClient is the minimal client interface required by Tencent quote providers.

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // SearchClient is the minimal client interface required by Tencent search.

@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/internal/services"
+import "github.com/ceheng-io/stock-go/internal/services"
 
 // QuoteService is the root quote service type.
 type QuoteService = services.QuoteService

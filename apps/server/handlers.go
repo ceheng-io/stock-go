@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	stock "github.com/ceheng.io/stock-go"
+	stock "github.com/ceheng-io/stock-go"
 )
 
 func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {

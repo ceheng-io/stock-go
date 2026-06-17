@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	stock "github.com/ceheng.io/stock-go"
+	stock "github.com/ceheng-io/stock-go"
 )
 
 type SDK interface {

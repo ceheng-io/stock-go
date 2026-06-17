@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ceheng.io/stock-go/internal/core"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // FuturesKlineOptions configures domestic futures historical K-line fetching.

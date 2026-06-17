@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/ceheng.io/stock-go/cache"
+	"github.com/ceheng-io/stock-go/cache"
 )
 
 type CacheOptions = cache.Options

@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ceheng.io/stock-go/parser"
-	"github.com/ceheng.io/stock-go/useragent"
+	"github.com/ceheng-io/stock-go/parser"
+	"github.com/ceheng-io/stock-go/useragent"
 )
 
 const maxDrainBodyBytes int64 = 512 << 10

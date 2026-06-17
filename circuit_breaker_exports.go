@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/internal/core"
+import "github.com/ceheng-io/stock-go/internal/core"
 
 // CircuitBreakerStats exposes breaker counters for diagnostics.
 type CircuitBreakerStats = core.CircuitBreakerStats

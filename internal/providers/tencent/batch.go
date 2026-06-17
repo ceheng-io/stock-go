@@ -4,9 +4,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/ceheng.io/stock-go/internal/core"
-	"github.com/ceheng.io/stock-go/types"
-	"github.com/ceheng.io/stock-go/utils"
+	"github.com/ceheng-io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/types"
+	"github.com/ceheng-io/stock-go/utils"
 )
 
 const (

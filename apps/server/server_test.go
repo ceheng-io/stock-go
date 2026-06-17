@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	stock "github.com/ceheng.io/stock-go"
+	stock "github.com/ceheng-io/stock-go"
 )
 
 type fakeSDK struct {

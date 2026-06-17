@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 const emTopicPushToken = "7eea3edcaed734bea9cbfc24409ed989"

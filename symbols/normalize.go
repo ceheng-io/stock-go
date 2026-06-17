@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ceheng.io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/core"
 )
 
 var (

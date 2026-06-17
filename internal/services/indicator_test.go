@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ceheng.io/stock-go/indicators"
-	"github.com/ceheng.io/stock-go/internal/providers/eastmoney"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/indicators"
+	"github.com/ceheng-io/stock-go/internal/providers/eastmoney"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 type indicatorKlineStub struct {

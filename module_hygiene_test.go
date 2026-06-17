@@ -7,6 +7,24 @@ import (
 	"testing"
 )
 
+func TestGoModulePathsUseCanonicalGitHubSlug(t *testing.T) {
+	assertModulePath(t, ".", "github.com/ceheng-io/stock-go")
+	assertModulePath(t, "apps/web", "github.com/ceheng-io/stock-go/apps/web")
+}
+
+func assertModulePath(t *testing.T, dir string, expected string) {
+	t.Helper()
+	cmd := exec.Command("go", "list", "-m")
+	cmd.Dir = dir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("go list -m in %s failed: %v\n%s", dir, err, output)
+	}
+	if got := strings.TrimSpace(string(output)); got != expected {
+		t.Fatalf("module path in %s = %q, want %q", dir, got, expected)
+	}
+}
+
 func TestGoPackageEnumerationExcludesFrontendDependencies(t *testing.T) {
 	output, err := exec.Command("go", "list", "./...").CombinedOutput()
 	if err != nil {

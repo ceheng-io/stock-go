@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ceheng.io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/core"
 )
 
 func TestNormalizeAShare(t *testing.T) {

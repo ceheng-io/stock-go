@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/ceheng.io/stock-go/internal/core"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // JSONPClient 是新浪 provider 所需的最小请求客户端接口。

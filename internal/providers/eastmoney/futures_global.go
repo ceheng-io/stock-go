@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 const emFuturesGlobalSpotToken = "58b2fa8f54638b60b87d69b31969089c"

@@ -1,6 +1,6 @@
 # SDK v0.1 验收清单
 
-本文用于记录 `github.com/ceheng.io/stock-go` SDK v0.1 的完成范围。v0.1 的交付物是 Go SDK 库，不包含 CLI、MCP、后端 API 和 Web 前端。
+本文用于记录 `github.com/ceheng-io/stock-go` SDK v0.1 的完成范围。v0.1 的交付物是 Go SDK 库，不包含 CLI、MCP、后端 API 和 Web 前端。
 
 项目仓库：[ceheng-io/stock-go](https://github.com/ceheng-io/stock-go)。
 
@@ -21,7 +21,7 @@
 
 ### 工程结构
 
-- `go.mod` 使用 `module github.com/ceheng.io/stock-go`。
+- `go.mod` 使用 `module github.com/ceheng-io/stock-go`。
 - 根包名为 `stock`，提供 `stock.New()` 和 `stock.StockSDK` 入口。
 - 公开纯能力包包括 `types`、`cache`、`symbols`、`indicators`、`signals`、`screener`、`parser`、`utils`、`errors`、`constants`、`timeutil`、`useragent`。
 - 数据源适配和服务编排位于 `internal/providers`、`internal/services`、`internal/core`。

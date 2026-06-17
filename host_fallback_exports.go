@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/internal/core"
+import "github.com/ceheng-io/stock-go/internal/core"
 
 // HostFallbackOptions configures fallback-host health tracking.
 type HostFallbackOptions = core.HostFallbackOptions

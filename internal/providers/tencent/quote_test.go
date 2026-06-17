@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ceheng.io/stock-go/internal/core"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 type fakeQuoteClient struct {

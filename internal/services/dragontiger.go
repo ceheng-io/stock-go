@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 
-	"github.com/ceheng.io/stock-go/internal/providers/eastmoney"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/providers/eastmoney"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // DragonTigerClient is the request client interface required by DragonTigerService.

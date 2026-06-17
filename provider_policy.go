@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ceheng.io/stock-go/constants"
+	"github.com/ceheng-io/stock-go/constants"
 )
 
 // ResolvedRetryOptions contains complete retry settings.

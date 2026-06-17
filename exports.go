@@ -1,10 +1,10 @@
 package stock
 
 import (
-	"github.com/ceheng.io/stock-go/internal/providers/eastmoney"
-	"github.com/ceheng.io/stock-go/internal/providers/tencent"
-	"github.com/ceheng.io/stock-go/internal/services"
-	domaintypes "github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/providers/eastmoney"
+	"github.com/ceheng-io/stock-go/internal/providers/tencent"
+	"github.com/ceheng-io/stock-go/internal/services"
+	domaintypes "github.com/ceheng-io/stock-go/types"
 )
 
 type AShareMarket = tencent.AShareMarket

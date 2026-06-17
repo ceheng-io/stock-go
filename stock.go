@@ -1,8 +1,8 @@
 package stock
 
 import (
-	"github.com/ceheng.io/stock-go/internal/core"
-	"github.com/ceheng.io/stock-go/internal/services"
+	"github.com/ceheng-io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/services"
 )
 
 // Client is the root SDK entry point.

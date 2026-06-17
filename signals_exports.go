@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/signals"
+import "github.com/ceheng-io/stock-go/signals"
 
 type SignalType = signals.SignalType
 

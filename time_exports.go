@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/timeutil"
+import "github.com/ceheng-io/stock-go/timeutil"
 
 type MarketTz = timeutil.MarketTz
 type TimeMeta = timeutil.TimeMeta

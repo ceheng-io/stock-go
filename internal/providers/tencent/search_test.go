@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 type fakeSearchClient struct {

@@ -3,7 +3,7 @@ package stock
 import (
 	"context"
 
-	"github.com/ceheng.io/stock-go/utils"
+	"github.com/ceheng-io/stock-go/utils"
 )
 
 // ChunkArray 将切片分割成指定大小的块。

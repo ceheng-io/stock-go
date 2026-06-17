@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ceheng.io/stock-go/symbols"
-	"github.com/ceheng.io/stock-go/timeutil"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/symbols"
+	"github.com/ceheng-io/stock-go/timeutil"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 const emPushToken = "7eea3edcaed734bea9cbfc24409ed989"

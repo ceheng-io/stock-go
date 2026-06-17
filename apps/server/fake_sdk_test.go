@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	stock "github.com/ceheng.io/stock-go"
+	stock "github.com/ceheng-io/stock-go"
 )
 
 func (f *fakeSDK) GetAllQuotesByCodes(context.Context, []string, ...stock.GetAllAShareQuotesOptions) ([]stock.FullQuote, error) {

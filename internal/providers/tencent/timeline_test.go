@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ceheng.io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/core"
 )
 
 type fakeTimelineClient struct {

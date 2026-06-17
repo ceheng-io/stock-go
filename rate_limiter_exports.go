@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/internal/core"
+import "github.com/ceheng-io/stock-go/internal/core"
 
 // RateLimiterOptions configures token-bucket request throttling.
 type RateLimiterOptions = core.RateLimiterOptions

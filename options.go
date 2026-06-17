@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ceheng.io/stock-go/constants"
-	"github.com/ceheng.io/stock-go/internal/core"
-	"github.com/ceheng.io/stock-go/useragent"
+	"github.com/ceheng-io/stock-go/constants"
+	"github.com/ceheng-io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/useragent"
 )
 
 // Option configures a Client.

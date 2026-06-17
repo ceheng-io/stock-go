@@ -1,4 +1,4 @@
-module github.com/ceheng.io/stock-go
+module github.com/ceheng-io/stock-go
 
 go 1.22
 

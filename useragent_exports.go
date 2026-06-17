@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/useragent"
+import "github.com/ceheng-io/stock-go/useragent"
 
 // AllUserAgents 返回所有可用 User-Agent 的副本。
 func AllUserAgents() []string {

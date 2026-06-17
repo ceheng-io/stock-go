@@ -5,7 +5,7 @@ import (
 	"math"
 	"sort"
 
-	"github.com/ceheng.io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/core"
 )
 
 // SortDirection controls numeric sorting order.

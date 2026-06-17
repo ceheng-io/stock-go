@@ -3,7 +3,7 @@ package signals
 import (
 	"fmt"
 
-	"github.com/ceheng.io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/core"
 )
 
 // CalcSignals detects indicator events from precomputed indicator rows.

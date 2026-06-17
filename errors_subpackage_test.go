@@ -3,8 +3,8 @@ package stock_test
 import (
 	"testing"
 
-	stock "github.com/ceheng.io/stock-go"
-	stockerrors "github.com/ceheng.io/stock-go/errors"
+	stock "github.com/ceheng-io/stock-go"
+	stockerrors "github.com/ceheng-io/stock-go/errors"
 )
 
 func TestErrorsSubpackageReExportsTSErrorEntry(t *testing.T) {

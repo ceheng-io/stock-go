@@ -3,7 +3,7 @@ package stock
 import (
 	"testing"
 
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 func TestGenerateSearchExternalLinksForTencentMarketIDs(t *testing.T) {

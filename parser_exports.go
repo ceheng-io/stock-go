@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/parser"
+import "github.com/ceheng-io/stock-go/parser"
 
 type TencentQuoteItem = parser.TencentQuoteItem
 

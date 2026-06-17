@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ceheng.io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/core"
 )
 
 // JSONPCallbackMode controls how a callback name is sent to the upstream.

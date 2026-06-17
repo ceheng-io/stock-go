@@ -1,6 +1,6 @@
 package stock
 
-import domaintypes "github.com/ceheng.io/stock-go/types"
+import domaintypes "github.com/ceheng-io/stock-go/types"
 
 type Quote = domaintypes.Quote
 type SimpleQuote = domaintypes.SimpleQuote

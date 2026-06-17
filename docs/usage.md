@@ -1,17 +1,17 @@
 # 策衡 stock-go 使用手册
 
-本文面向第一次接入 `github.com/ceheng.io/stock-go` 的 Go 开发者，按真实使用场景说明如何安装、配置、拉取行情、计算指标、处理错误和治理请求。
+本文面向第一次接入 `github.com/ceheng-io/stock-go` 的 Go 开发者，按真实使用场景说明如何安装、配置、拉取行情、计算指标、处理错误和治理请求。
 
 `stock-go` 当前定位是“策衡”的 Go 版本 SDK 库。根包提供稳定入口和薄委托，具体数据源适配、请求治理和服务编排放在 `internal/` 下；业务代码通常只需要导入根包，以及按需导入 `indicators`、`symbols`、`signals`、`screener`、`cache` 等纯能力子包。
 
 ## 安装
 
 ```bash
-go get github.com/ceheng.io/stock-go
+go get github.com/ceheng-io/stock-go
 ```
 
 ```go
-import stock "github.com/ceheng.io/stock-go"
+import stock "github.com/ceheng-io/stock-go"
 ```
 
 最低接入方式是创建一个 `*stock.Client`：
@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"time"
 
-	stock "github.com/ceheng.io/stock-go"
+	stock "github.com/ceheng-io/stock-go"
 )
 
 func main() {
@@ -416,7 +416,7 @@ fmt.Println(last.Date, last.Close, last.MA, last.MACD)
 也可以完全离线使用 `indicators` 子包：
 
 ```go
-import "github.com/ceheng.io/stock-go/indicators"
+import "github.com/ceheng-io/stock-go/indicators"
 
 closes := indicators.Values(10.2, 10.5, 10.8, 10.4, 11.0)
 ma := indicators.CalcMA(closes, indicators.MAOptions{
@@ -779,7 +779,7 @@ fmt.Println(status)
 `screener` 子包用于对已获取的数据做本地过滤、排序和截取：
 
 ```go
-import "github.com/ceheng.io/stock-go/screener"
+import "github.com/ceheng-io/stock-go/screener"
 
 picks, err := screener.Screen(quotes).
 	Where(func(q stock.FullQuote) bool {
@@ -801,7 +801,7 @@ fmt.Println(len(picks))
 `signals` 子包用于根据 K 线和指标计算金叉/死叉、超买/超卖、BOLL 突破、SAR 反转等信号：
 
 ```go
-import "github.com/ceheng.io/stock-go/signals"
+import "github.com/ceheng-io/stock-go/signals"
 
 signalsRows, err := signals.CalcSignals(signalKlines, signals.SignalOptions{
 	MA: &signals.MAOptions{Fast: 5, Slow: 20},

@@ -1,6 +1,6 @@
 package core
 
-import "github.com/ceheng.io/stock-go/parser"
+import "github.com/ceheng-io/stock-go/parser"
 
 // TencentQuoteItem is a parsed Tencent quote assignment.
 type TencentQuoteItem = parser.TencentQuoteItem

@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/constants"
+import "github.com/ceheng-io/stock-go/constants"
 
 type CommodityOption = constants.CommodityOption
 

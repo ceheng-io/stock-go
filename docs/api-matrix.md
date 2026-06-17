@@ -1,6 +1,6 @@
 # 公开 API 速查
 
-本文记录 `github.com/ceheng.io/stock-go` 当前公开入口，方便接入方按领域查找根包、服务字段和公开子包能力。
+本文记录 `github.com/ceheng-io/stock-go` 当前公开入口，方便接入方按领域查找根包、服务字段和公开子包能力。
 
 项目仓库：[ceheng-io/stock-go](https://github.com/ceheng-io/stock-go)。
 

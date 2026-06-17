@@ -4,9 +4,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/ceheng.io/stock-go/internal/providers/eastmoney"
-	"github.com/ceheng.io/stock-go/internal/providers/tencent"
-	"github.com/ceheng.io/stock-go/types"
+	"github.com/ceheng-io/stock-go/internal/providers/eastmoney"
+	"github.com/ceheng-io/stock-go/internal/providers/tencent"
+	"github.com/ceheng-io/stock-go/types"
 )
 
 // QuoteClient is the request client interface required by QuoteService.

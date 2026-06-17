@@ -1,6 +1,6 @@
 package stock
 
-import "github.com/ceheng.io/stock-go/symbols"
+import "github.com/ceheng-io/stock-go/symbols"
 
 type Market = symbols.Market
 

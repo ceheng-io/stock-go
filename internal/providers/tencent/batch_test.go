@@ -6,7 +6,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ceheng.io/stock-go/internal/core"
+	"github.com/ceheng-io/stock-go/internal/core"
 )
 
 type batchQuoteClient struct {

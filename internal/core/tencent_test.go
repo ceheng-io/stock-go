@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ceheng.io/stock-go/useragent"
+	"github.com/ceheng-io/stock-go/useragent"
 )
 
 func TestParseTencentQuoteResponse(t *testing.T) {
