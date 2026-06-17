@@ -71,6 +71,12 @@ func New(options ...Option) *Client {
 		CircuitBreaker:   newCoreCircuitBreaker(config.CircuitBreaker),
 		ProviderPolicies: newCoreProviderPolicies(config.ProviderPolicies),
 		Hooks:            config.RequestHooks,
+		EastmoneySession: core.EastmoneySessionConfig{
+			AutoInit:  config.EastmoneySession.AutoInit,
+			InitURL:   config.EastmoneySession.InitURL,
+			UserAgent: config.EastmoneySession.UserAgent,
+			Headers:   cloneStringMap(config.EastmoneySession.Headers),
+		},
 	})
 	quoteService := services.NewQuoteService(coreClient, services.QuoteURLs{
 		Minute:     config.TencentMinuteURL,

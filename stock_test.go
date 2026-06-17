@@ -284,6 +284,59 @@ func TestNewWiresProviderPolicy(t *testing.T) {
 	}
 }
 
+func TestWithEastmoneyCookieWiresProviderCookieHeader(t *testing.T) {
+	client := New(WithEastmoneyCookie("qgqp_b_id=session; wsc_checkuser_ok=1"))
+
+	policy, ok := client.core.ProviderPolicy(core.ProviderEastmoney)
+	if !ok {
+		t.Fatal("core Eastmoney provider policy is missing")
+	}
+	if got := policy.Headers["Cookie"]; got != "qgqp_b_id=session; wsc_checkuser_ok=1" {
+		t.Fatalf("Eastmoney Cookie header = %q", got)
+	}
+}
+
+func TestWithEastmoneyHeadersMergesProviderHeaders(t *testing.T) {
+	client := New(
+		WithEastmoneyCookie("qgqp_b_id=session"),
+		WithEastmoneyHeaders(map[string]string{
+			"Referer": "https://quote.eastmoney.com/center/boardlist.html",
+			"Accept":  "application/json",
+		}),
+	)
+
+	policy, ok := client.core.ProviderPolicy(core.ProviderEastmoney)
+	if !ok {
+		t.Fatal("core Eastmoney provider policy is missing")
+	}
+	if policy.Headers["Cookie"] != "qgqp_b_id=session" {
+		t.Fatalf("Cookie header = %q", policy.Headers["Cookie"])
+	}
+	if policy.Headers["Referer"] != "https://quote.eastmoney.com/center/boardlist.html" || policy.Headers["Accept"] != "application/json" {
+		t.Fatalf("Eastmoney headers = %#v", policy.Headers)
+	}
+}
+
+func TestWithEastmoneySessionAutoInitWiresCoreConfig(t *testing.T) {
+	client := New(WithEastmoneySession(EastmoneySessionOptions{
+		AutoInit:  true,
+		InitURL:   "https://quote.eastmoney.com/custom.html",
+		UserAgent: "eastmoney-session-test",
+		Headers:   map[string]string{"X-Session": "yes"},
+	}))
+
+	session := client.core.EastmoneySession()
+	if !session.AutoInit {
+		t.Fatal("Eastmoney session auto init is disabled")
+	}
+	if session.InitURL != "https://quote.eastmoney.com/custom.html" || session.UserAgent != "eastmoney-session-test" {
+		t.Fatalf("Eastmoney session = %+v", session)
+	}
+	if session.Headers["X-Session"] != "yes" {
+		t.Fatalf("Eastmoney session headers = %#v", session.Headers)
+	}
+}
+
 func TestRetryOptionsCanDisableNetworkAndTimeoutRetries(t *testing.T) {
 	noNetworkRetry := false
 	noTimeoutRetry := false

@@ -76,6 +76,7 @@ type Config struct {
 	CircuitBreaker                   CircuitBreakerOptions
 	ProviderPolicies                 map[ProviderName]ProviderPolicy
 	RequestHooks                     RequestHooks
+	EastmoneySession                 EastmoneySessionOptions
 }
 
 // RequestClientOptions preserves the TypeScript SDK configuration type name.
@@ -125,6 +126,14 @@ type ProviderPolicy struct {
 	Retry           *RetryOptions
 	RateLimit       *RateLimitOptions
 	CircuitBreaker  *CircuitBreakerOptions
+}
+
+// EastmoneySessionOptions controls optional Eastmoney browser-session bootstrapping.
+type EastmoneySessionOptions struct {
+	AutoInit  bool
+	InitURL   string
+	UserAgent string
+	Headers   map[string]string
 }
 
 // ProviderRequestPolicy preserves the TypeScript SDK provider policy type name.
@@ -317,6 +326,46 @@ func WithHeaders(headers map[string]string) Option {
 			return
 		}
 		config.Headers = mergeStringMap(config.Headers, headers)
+	}
+}
+
+// WithEastmoneyCookie sets the Cookie header used by Eastmoney provider requests.
+func WithEastmoneyCookie(cookie string) Option {
+	if strings.TrimSpace(cookie) == "" {
+		return func(*Config) {}
+	}
+	return WithEastmoneyHeaders(map[string]string{"Cookie": cookie})
+}
+
+// WithEastmoneyHeaders sets additional headers used by Eastmoney provider requests.
+func WithEastmoneyHeaders(headers map[string]string) Option {
+	return func(config *Config) {
+		if len(headers) == 0 {
+			return
+		}
+		if config.ProviderPolicies == nil {
+			config.ProviderPolicies = make(map[ProviderName]ProviderPolicy)
+		}
+		policy := config.ProviderPolicies[ProviderEastmoney]
+		policy.Headers = mergeStringMap(policy.Headers, headers)
+		config.ProviderPolicies[ProviderEastmoney] = policy
+	}
+}
+
+// WithEastmoneySessionAutoInit enables one-shot Eastmoney browser-session initialization before retrying failed requests.
+func WithEastmoneySessionAutoInit() Option {
+	return WithEastmoneySession(EastmoneySessionOptions{AutoInit: true})
+}
+
+// WithEastmoneySession configures optional Eastmoney browser-session initialization.
+func WithEastmoneySession(options EastmoneySessionOptions) Option {
+	return func(config *Config) {
+		config.EastmoneySession = EastmoneySessionOptions{
+			AutoInit:  options.AutoInit,
+			InitURL:   options.InitURL,
+			UserAgent: options.UserAgent,
+			Headers:   cloneStringMap(options.Headers),
+		}
 	}
 }
 

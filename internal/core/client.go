@@ -8,7 +8,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ceheng.io/stock-go/parser"
@@ -40,6 +42,7 @@ type Config struct {
 	HostFallback      *HostFallbackManager
 	ProviderPolicies  map[ProviderName]ProviderPolicy
 	Hooks             RequestHooks
+	EastmoneySession  EastmoneySessionConfig
 }
 
 // RetryConfig controls internal request retries.
@@ -63,6 +66,14 @@ type ProviderPolicy struct {
 	Retry           *RetryConfig
 	RateLimiter     RequestLimiter
 	CircuitBreaker  RequestCircuitBreaker
+}
+
+// EastmoneySessionConfig controls optional browser-session bootstrapping for Eastmoney requests.
+type EastmoneySessionConfig struct {
+	AutoInit  bool
+	InitURL   string
+	UserAgent string
+	Headers   map[string]string
 }
 
 // ResolvedProviderPolicy contains complete governance settings for one provider.
@@ -144,6 +155,9 @@ type Client struct {
 	hostFallback      *HostFallbackManager
 	providerPolicies  map[ProviderName]ResolvedProviderPolicy
 	hooks             RequestHooks
+	eastmoneySession  EastmoneySessionConfig
+	eastmoneyMu       sync.Mutex
+	eastmoneyCookies  map[string]string
 }
 
 // NewClient creates an internal request client.
@@ -236,6 +250,8 @@ func NewClient(config Config) *Client {
 		hostFallback:      config.HostFallback,
 		providerPolicies:  resolveProviderPolicies(defaultPolicy, config.ProviderPolicies),
 		hooks:             config.Hooks,
+		eastmoneySession:  normalizeEastmoneySessionConfig(config.EastmoneySession),
+		eastmoneyCookies:  make(map[string]string),
 	}
 }
 
@@ -307,6 +323,13 @@ func (c *Client) ProviderPolicy(provider ProviderName) (ResolvedProviderPolicy, 
 // Hooks returns the configured request lifecycle hooks.
 func (c *Client) Hooks() RequestHooks { return c.hooks }
 
+// EastmoneySession returns the configured Eastmoney browser-session options.
+func (c *Client) EastmoneySession() EastmoneySessionConfig {
+	session := c.eastmoneySession
+	session.Headers = cloneStringMap(session.Headers)
+	return session
+}
+
 // GetTencentQuote fetches and parses Tencent quote response text.
 func (c *Client) GetTencentQuote(ctx context.Context, params string) ([]TencentQuoteItem, error) {
 	requestURL := c.baseURL + "/?q=" + url.QueryEscape(params)
@@ -370,6 +393,20 @@ func (c *Client) getBytes(ctx context.Context, requestURL string, provider Provi
 				c.hostFallback.RecordSuccess(candidateURL)
 			}
 			return body, nil
+		}
+		if c.shouldInitEastmoneySession(candidateURL, provider, policy, err) && c.initializeEastmoneySession(ctx, policy) {
+			sessionRetry := policy.Retry
+			sessionRetry.MaxRetries = 0
+			body, err = c.getBytesWithRetry(ctx, candidateURL, sessionRetry, policy, provider)
+			if err == nil {
+				if policy.CircuitBreaker != nil {
+					policy.CircuitBreaker.RecordSuccess()
+				}
+				if c.hostFallback != nil {
+					c.hostFallback.RecordSuccess(candidateURL)
+				}
+				return body, nil
+			}
 		}
 		lastErr = err
 		if c.hostFallback != nil {
@@ -436,6 +473,7 @@ func (c *Client) getBytesOnce(ctx context.Context, requestURL string, policy Res
 			return nil, codedRequestError(err, provider, requestURL, policy.Timeout)
 		}
 	}
+	policy = c.withEastmoneySessionCookies(requestURL, provider, policy)
 	requestContext := RequestContext{
 		Provider: provider,
 		URL:      requestURL,
@@ -619,6 +657,134 @@ func parseRequestError(err error, provider ProviderName, requestURL string) erro
 	return NewCodedError("PARSE_ERROR", fmt.Sprintf("Failed to parse JSON response from %s: %s", provider, requestURL), err)
 }
 
+const (
+	defaultEastmoneySessionInitURL   = "https://quote.eastmoney.com/center/boardlist.html"
+	defaultEastmoneySessionUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+)
+
+func normalizeEastmoneySessionConfig(config EastmoneySessionConfig) EastmoneySessionConfig {
+	if config.InitURL == "" {
+		config.InitURL = defaultEastmoneySessionInitURL
+	}
+	if config.UserAgent == "" {
+		config.UserAgent = defaultEastmoneySessionUserAgent
+	}
+	config.Headers = cloneStringMap(config.Headers)
+	if config.Headers == nil {
+		config.Headers = map[string]string{}
+	}
+	if !hasHeader(config.Headers, "Accept") {
+		config.Headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+	}
+	if !hasHeader(config.Headers, "Accept-Language") {
+		config.Headers["Accept-Language"] = "zh-CN,zh;q=0.9"
+	}
+	if !hasHeader(config.Headers, "Cache-Control") {
+		config.Headers["Cache-Control"] = "no-cache"
+	}
+	if !hasHeader(config.Headers, "Pragma") {
+		config.Headers["Pragma"] = "no-cache"
+	}
+	return config
+}
+
+func (c *Client) shouldInitEastmoneySession(requestURL string, provider ProviderName, policy ResolvedProviderPolicy, err error) bool {
+	if provider != ProviderEastmoney || !c.eastmoneySession.AutoInit || err == nil {
+		return false
+	}
+	if !strings.Contains(safeHost(requestURL), "eastmoney.com") || hasHeader(policy.Headers, "Cookie") {
+		return false
+	}
+	var coded CodedError
+	if errors.As(err, &coded) {
+		switch coded.SDKCode() {
+		case "NETWORK_ERROR", "TIMEOUT", "HTTP_ERROR", "RATE_LIMITED":
+			return true
+		default:
+			return false
+		}
+	}
+	var statusErr httpStatusError
+	if errors.As(err, &statusErr) {
+		return isRetryableStatus(statusErr.statusCode, defaultRetryableStatusCodes()) || statusErr.statusCode == http.StatusForbidden || statusErr.statusCode == http.StatusUnauthorized
+	}
+	return true
+}
+
+func (c *Client) initializeEastmoneySession(ctx context.Context, policy ResolvedProviderPolicy) bool {
+	config := c.eastmoneySession
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, config.InitURL, nil)
+	if err != nil {
+		return false
+	}
+	for key, value := range config.Headers {
+		req.Header.Set(key, value)
+	}
+	if !hasHeader(config.Headers, "User-Agent") && config.UserAgent != "" {
+		req.Header.Set("User-Agent", config.UserAgent)
+	}
+	for key, value := range policy.Headers {
+		if strings.EqualFold(key, "Cookie") || req.Header.Get(key) != "" {
+			continue
+		}
+		req.Header.Set(key, value)
+	}
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return false
+	}
+	defer drainAndClose(resp.Body)
+	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
+		return false
+	}
+	return c.storeEastmoneyCookies(resp.Cookies())
+}
+
+func (c *Client) withEastmoneySessionCookies(requestURL string, provider ProviderName, policy ResolvedProviderPolicy) ResolvedProviderPolicy {
+	if provider != ProviderEastmoney || !strings.Contains(safeHost(requestURL), "eastmoney.com") || hasHeader(policy.Headers, "Cookie") {
+		return policy
+	}
+	cookieHeader := c.eastmoneyCookieHeader()
+	if cookieHeader == "" {
+		return policy
+	}
+	policy.Headers = mergeStringMap(policy.Headers, map[string]string{"Cookie": cookieHeader})
+	return policy
+}
+
+func (c *Client) storeEastmoneyCookies(cookies []*http.Cookie) bool {
+	if len(cookies) == 0 {
+		return false
+	}
+	c.eastmoneyMu.Lock()
+	defer c.eastmoneyMu.Unlock()
+	for _, cookie := range cookies {
+		if cookie == nil || cookie.Name == "" || cookie.Value == "" {
+			continue
+		}
+		c.eastmoneyCookies[cookie.Name] = cookie.Value
+	}
+	return len(c.eastmoneyCookies) > 0
+}
+
+func (c *Client) eastmoneyCookieHeader() string {
+	c.eastmoneyMu.Lock()
+	defer c.eastmoneyMu.Unlock()
+	if len(c.eastmoneyCookies) == 0 {
+		return ""
+	}
+	names := make([]string, 0, len(c.eastmoneyCookies))
+	for name := range c.eastmoneyCookies {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	parts := make([]string, 0, len(names))
+	for _, name := range names {
+		parts = append(parts, name+"="+c.eastmoneyCookies[name])
+	}
+	return strings.Join(parts, "; ")
+}
+
 func decodeGBK(data []byte) (string, error) {
 	return parser.DecodeGBK(data)
 }
@@ -711,6 +877,15 @@ func cloneStringMap(values map[string]string) map[string]string {
 		cloned[key] = value
 	}
 	return cloned
+}
+
+func hasHeader(headers map[string]string, key string) bool {
+	for existing := range headers {
+		if strings.EqualFold(existing, key) {
+			return true
+		}
+	}
+	return false
 }
 
 func boolPtr(value bool) *bool {

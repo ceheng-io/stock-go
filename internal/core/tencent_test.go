@@ -802,6 +802,121 @@ func TestClientGetTextAppliesHeadersAndProviderOverrides(t *testing.T) {
 	}
 }
 
+func TestClientGetTextInitializesEastmoneySessionAndRetries(t *testing.T) {
+	var apiCookies []string
+	var sessionUserAgent string
+	transport := roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		switch req.URL.Host {
+		case "quote.eastmoney.com":
+			sessionUserAgent = req.Header.Get("User-Agent")
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Status:     http.StatusText(http.StatusOK),
+				Header: http.Header{
+					"Set-Cookie": []string{"qgqp_b_id=session; Path=/; Domain=.eastmoney.com"},
+				},
+				Body:    io.NopCloser(strings.NewReader("session")),
+				Request: req,
+			}, nil
+		case "79.push2.eastmoney.com":
+			apiCookies = append(apiCookies, req.Header.Get("Cookie"))
+			if len(apiCookies) == 1 {
+				return nil, errors.New("EOF")
+			}
+			if req.Header.Get("Cookie") != "qgqp_b_id=session" {
+				t.Fatalf("retry Cookie = %q, want initialized session cookie", req.Header.Get("Cookie"))
+			}
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Status:     http.StatusText(http.StatusOK),
+				Header:     make(http.Header),
+				Body:       io.NopCloser(strings.NewReader("ok")),
+				Request:    req,
+			}, nil
+		default:
+			t.Fatalf("unexpected host %q", req.URL.Host)
+			return nil, nil
+		}
+	})
+	client := NewClient(Config{
+		HTTPClient: &http.Client{Transport: transport},
+		Retry:      RetryConfig{MaxRetries: 0, BaseDelay: time.Nanosecond},
+		EastmoneySession: EastmoneySessionConfig{
+			AutoInit: true,
+			InitURL:  "https://quote.eastmoney.com/center/boardlist.html",
+		},
+		HostFallback: nil,
+	})
+
+	text, err := client.GetText(context.Background(), "https://79.push2.eastmoney.com/api/qt/clist/get")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if text != "ok" {
+		t.Fatalf("text = %q, want ok", text)
+	}
+	if len(apiCookies) != 2 || apiCookies[0] != "" || apiCookies[1] != "qgqp_b_id=session" {
+		t.Fatalf("api cookies = %#v", apiCookies)
+	}
+	if !strings.Contains(sessionUserAgent, "Mozilla/5.0") {
+		t.Fatalf("session User-Agent = %q, want browser-like UA", sessionUserAgent)
+	}
+}
+
+func TestClientGetTextSkipsEastmoneySessionWhenCookieConfigured(t *testing.T) {
+	var sessionCalls int
+	var apiCookies []string
+	transport := roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		switch req.URL.Host {
+		case "quote.eastmoney.com":
+			sessionCalls++
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Status:     http.StatusText(http.StatusOK),
+				Header:     http.Header{"Set-Cookie": []string{"qgqp_b_id=auto; Path=/"}},
+				Body:       io.NopCloser(strings.NewReader("session")),
+				Request:    req,
+			}, nil
+		case "79.push2.eastmoney.com":
+			apiCookies = append(apiCookies, req.Header.Get("Cookie"))
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Status:     http.StatusText(http.StatusOK),
+				Header:     make(http.Header),
+				Body:       io.NopCloser(strings.NewReader("ok")),
+				Request:    req,
+			}, nil
+		default:
+			t.Fatalf("unexpected host %q", req.URL.Host)
+			return nil, nil
+		}
+	})
+	client := NewClient(Config{
+		HTTPClient: &http.Client{Transport: transport},
+		ProviderPolicies: map[ProviderName]ProviderPolicy{
+			ProviderEastmoney: {Headers: map[string]string{"Cookie": "qgqp_b_id=manual"}},
+		},
+		EastmoneySession: EastmoneySessionConfig{
+			AutoInit: true,
+			InitURL:  "https://quote.eastmoney.com/center/boardlist.html",
+		},
+	})
+
+	text, err := client.GetText(context.Background(), "https://79.push2.eastmoney.com/api/qt/clist/get")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if text != "ok" {
+		t.Fatalf("text = %q, want ok", text)
+	}
+	if sessionCalls != 0 {
+		t.Fatalf("sessionCalls = %d, want 0", sessionCalls)
+	}
+	if len(apiCookies) != 1 || apiCookies[0] != "qgqp_b_id=manual" {
+		t.Fatalf("api cookies = %#v", apiCookies)
+	}
+}
+
 func TestClientGetTextEmitsRequestHooks(t *testing.T) {
 	var events []string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
